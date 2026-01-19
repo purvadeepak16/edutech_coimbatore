@@ -59,18 +59,19 @@
 .group-card {
     min-width: 280px;
     flex: 1;
-    border-radius: 16px;
+    border-radius: var(--card-radius);
     padding: 20px;
     display: flex;
     flex-direction: column;
     gap: 16px;
-    box-shadow: 0 4px 12px rgba(45, 62, 80, 0.05);
-    transition: transform 0.2s;
+    box-shadow: var(--card-shadow);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    border: 1px solid rgba(45, 62, 80, 0.06);
 }
 
 .group-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 16px rgba(45, 62, 80, 0.08);
+    box-shadow: var(--card-shadow-hover);
 }
 
 .group-header {
