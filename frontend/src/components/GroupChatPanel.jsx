@@ -38,8 +38,14 @@ export default function GroupChatPanel({ groupId, onClose }) {
         const messagesJson = await mRes.json();
 
         if (!mounted) return;
-        setGroup(groupJson);
+        // API returns { success:true, group: {...}, isMember }
+        setGroup(groupJson.group || groupJson);
         setMessages(messagesJson.messages || []);
+        // If the user is a member, post a short 'view' system message once
+        if (groupJson.isMember) {
+          // send a lightweight 'view' notice but avoid spamming: only once per open
+          sendViewNotice(groupJson.group || groupJson).catch((e) => console.warn(e));
+        }
       } catch (err) {
         console.error("Group chat load error:", err);
       } finally {
@@ -82,13 +88,38 @@ export default function GroupChatPanel({ groupId, onClose }) {
       });
       if (!res.ok) throw new Error("send failed");
       const json = await res.json();
-      setMessages((m) => m.map((it) => (it.id === optimistic.id ? json.message : it)));
+      // backend returns { success:true, message: { ... } }
+      const returned = json.message || json;
+      setMessages((m) => m.map((it) => (it.id === optimistic.id ? returned : it)));
     } catch (err) {
       console.error("Send failed", err);
       // mark last optimistic as failed
       setMessages((m) => m.map((it) => (it.id === optimistic.id ? { ...it, _failed: true } : it)));
     } finally {
       setSending(false);
+    }
+  }
+
+  const viewNoticeSentRef = useRef(false);
+  async function sendViewNotice(groupObj) {
+    if (viewNoticeSentRef.current) return;
+    if (!currentUser) return;
+    try {
+      const token = await getIdToken();
+      const text = `${currentUser.displayName || currentUser.email || 'A user'} viewed the group.`;
+      const res = await fetch(`${API_BASE}/${groupId}/messages`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      });
+      if (!res.ok) return;
+      const json = await res.json();
+      const message = json.message || json;
+      // append to messages
+      setMessages((m) => [...m, message]);
+      viewNoticeSentRef.current = true;
+    } catch (e) {
+      console.warn('Failed to send view notice', e);
     }
   }
 

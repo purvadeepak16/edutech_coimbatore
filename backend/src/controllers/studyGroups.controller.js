@@ -224,7 +224,22 @@ export const sendMessage = async (req, res) => {
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    res.json({ success: true, id: msgRef.id });
+    // Read back the message to include server timestamp and return full message object
+    const msgDoc = await msgRef.get();
+    const msgData = msgDoc.data();
+    let createdAt = msgData.createdAt;
+    if (createdAt && typeof createdAt.toDate === 'function') createdAt = createdAt.toDate().toISOString();
+    else createdAt = new Date().toISOString();
+
+    const message = {
+      id: msgDoc.id,
+      text: msgData.text,
+      senderUid: msgData.senderId || null,
+      senderName: msgData.senderName || null,
+      createdAt,
+    };
+
+    res.json({ success: true, message });
   } catch (err) {
     console.error('Send message error:', err);
     res.status(500).json({ success: false, message: 'Failed to send message', error: err.message });
