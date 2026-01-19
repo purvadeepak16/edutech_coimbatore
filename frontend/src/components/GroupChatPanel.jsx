@@ -7,7 +7,7 @@ import "./GroupChatPanel.css";
 const API_BASE = "http://localhost:5000/api/study-groups";
 
 export default function GroupChatPanel({ groupId, onClose }) {
-  const { getIdToken, currentUser } = useAuth();
+  const { currentUser } = useAuth();
   const [group, setGroup] = useState(null);
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
@@ -21,7 +21,7 @@ export default function GroupChatPanel({ groupId, onClose }) {
     async function load() {
       setLoading(true);
       try {
-        const token = await getIdToken();
+      const token = currentUser ? await currentUser.getIdToken() : null;
         const [gRes, mRes] = await Promise.all([
           fetch(`${API_BASE}/${groupId}`, {
             headers: { Authorization: `Bearer ${token}` },
@@ -57,8 +57,18 @@ export default function GroupChatPanel({ groupId, onClose }) {
   }, [groupId]);
 
   useEffect(() => {
-    if (!listRef.current) return;
-    listRef.current.scrollTop = listRef.current.scrollHeight;
+    // Auto-scroll to latest message when messages change or loading finishes
+    const el = listRef.current;
+    if (!el) return;
+    // allow UI to settle
+    const raf = requestAnimationFrame(() => {
+      try {
+        el.scrollTop = el.scrollHeight;
+      } catch (e) {
+        // ignore
+      }
+    });
+    return () => cancelAnimationFrame(raf);
   }, [messages, loading]);
 
   async function handleSend(e) {
@@ -76,8 +86,8 @@ export default function GroupChatPanel({ groupId, onClose }) {
     };
     setMessages((m) => [...m, optimistic]);
     setText("");
-    try {
-      const token = await getIdToken();
+        try {
+      const token = currentUser ? await currentUser.getIdToken() : null;
       const res = await fetch(`${API_BASE}/${groupId}/messages`, {
         method: "POST",
         headers: {
@@ -105,7 +115,7 @@ export default function GroupChatPanel({ groupId, onClose }) {
     if (viewNoticeSentRef.current) return;
     if (!currentUser) return;
     try {
-      const token = await getIdToken();
+      const token = currentUser ? await currentUser.getIdToken() : null;
       const text = `${currentUser.displayName || currentUser.email || 'A user'} viewed the group.`;
       const res = await fetch(`${API_BASE}/${groupId}/messages`, {
         method: 'POST',
@@ -125,10 +135,15 @@ export default function GroupChatPanel({ groupId, onClose }) {
 
   if (!groupId) return null;
 
+  const memberCount = group?.members?.length ?? group?.memberCount ?? (group?.members ? group.members.length : undefined);
+
   return createPortal(
     <aside className="gp-panel" role="dialog" aria-label="Group chat">
       <div className="gp-header">
-        <div className="gp-title">{group?.name || "Group"}</div>
+        <div>
+          <div className="gp-title"><strong>{group?.name || "Group"}</strong></div>
+          <div className="gp-members">{typeof memberCount === 'number' ? `${memberCount} members` : 'Members'}</div>
+        </div>
         <button className="gp-close" onClick={onClose} aria-label="Close chat">✕</button>
       </div>
       <div className="gp-body" ref={listRef}>
