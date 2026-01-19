@@ -1,9 +1,41 @@
 import React, { useState } from 'react';
 import { ArrowRight, BookOpen, Star, Users } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import './LandingPage.css';
 
-const LandingPage = ({ onLogin }) => {
+const LandingPage = () => {
     const [isLogin, setIsLogin] = useState(true);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [username, setUsername] = useState('');
+    const [role, setRole] = useState('Student');
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    const { login, signUp } = useAuth();
+
+    async function handleSubmit(e) {
+        e.preventDefault();
+
+        if (!email || !password || (!isLogin && !username) || (!isLogin && !role)) {
+            return setError('Please fill in all fields');
+        }
+
+        try {
+            setError('');
+            setLoading(true);
+            if (isLogin) {
+                await login(email, password);
+            } else {
+                await signUp(email, password, username, role);
+            }
+        } catch (err) {
+            console.error(err);
+            setError('Failed to ' + (isLogin ? 'sign in' : 'create an account') + ': ' + err.message);
+        } finally {
+            setLoading(false);
+        }
+    }
 
     return (
         <div className="landing-page">
@@ -30,8 +62,10 @@ const LandingPage = ({ onLogin }) => {
                         </div>
                     </div>
 
-                    <button className="cta-btn" onClick={onLogin}>
-                        Get inside <ArrowRight size={18} />
+                    <button className="cta-btn" onClick={() => {
+                        document.querySelector('.auth-card').scrollIntoView({ behavior: 'smooth' });
+                    }}>
+                        Get started <ArrowRight size={18} />
                     </button>
 
                     {/* Decorative Floating Assets */}
@@ -55,27 +89,73 @@ const LandingPage = ({ onLogin }) => {
                         <p>{isLogin ? 'Enter your details to access your dashboard' : 'Join thousands of students today'}</p>
                     </div>
 
-                    <div className="auth-form">
+                    <form className="auth-form" onSubmit={handleSubmit}>
+                        {error && <div className="auth-error">{error}</div>}
+                        {!isLogin && (
+                            <div className="input-group">
+                                <label>Username</label>
+                                <input
+                                    type="text"
+                                    placeholder="Enter your name"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    required
+                                />
+                            </div>
+                        )}
+                        {!isLogin && (
+                            <div className="input-group">
+                                <label>I am a...</label>
+                                <select
+                                    value={role}
+                                    onChange={(e) => setRole(e.target.value)}
+                                    className="auth-select"
+                                    required
+                                >
+                                    <option value="Student">Student</option>
+                                    <option value="Mentor">Mentor</option>
+                                </select>
+                            </div>
+                        )}
                         <div className="input-group">
                             <label>Email Address</label>
-                            <input type="email" placeholder="monark@studysync.com" />
+                            <input
+                                type="email"
+                                placeholder="monark@studysync.com"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                            />
                         </div>
                         <div className="input-group">
                             <label>Password</label>
-                            <input type="password" placeholder="••••••••" />
+                            <input
+                                type="password"
+                                placeholder="••••••••"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                            />
                         </div>
 
-                        <button className="auth-submit-btn" onClick={onLogin}>
-                            {isLogin ? 'Sign In' : 'Sign Up'}
+                        <button className="auth-submit-btn" type="submit" disabled={loading}>
+                            {loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Sign Up')}
                         </button>
 
                         <div className="auth-footer">
                             {isLogin ? "Don't have an account? " : "Already have an account? "}
-                            <button className="link-btn" onClick={() => setIsLogin(!isLogin)}>
+                            <button
+                                type="button"
+                                className="link-btn"
+                                onClick={() => {
+                                    setIsLogin(!isLogin);
+                                    setError('');
+                                }}
+                            >
                                 {isLogin ? 'Sign Up' : 'Log In'}
                             </button>
                         </div>
-                    </div>
+                    </form>
                 </div>
             </div>
 

@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import {
     LayoutDashboard,
     BookOpen,
@@ -22,10 +23,22 @@ import './Sidebar.css';
 
 const Sidebar = () => {
     const location = useLocation();
+    const { logout, currentUser, userData } = useAuth();
+    const [error, setError] = useState('');
 
     const isActive = (path) => {
         return location.pathname === path;
     };
+
+    async function handleLogout() {
+        setError('');
+        try {
+            await logout();
+        } catch (err) {
+            setError('Failed to log out');
+            console.error(err);
+        }
+    }
 
     return (
         <aside className="sidebar">
@@ -139,10 +152,12 @@ const Sidebar = () => {
             <div className="sidebar-footer">
                 <div className="profile-card">
                     <div className="profile-info">
-                        <div className="avatar">M</div>
+                        <div className="avatar">
+                            {userData?.userName ? userData.userName[0].toUpperCase() : (currentUser?.displayName ? currentUser.displayName[0].toUpperCase() : 'U')}
+                        </div>
                         <div className="details">
-                            <span className="name">Monark</span>
-                            <span className="mastery">78% Mastery</span>
+                            <span className="name">{userData?.userName || currentUser?.displayName || 'User'}</span>
+                            <span className="mastery">{userData?.userRole || 'Student'}</span>
                         </div>
                     </div>
                     <div className="streak">
@@ -151,7 +166,8 @@ const Sidebar = () => {
                     </div>
                 </div>
 
-                <button className="logout-btn">
+                {error && <div className="logout-error">{error}</div>}
+                <button className="logout-btn" onClick={handleLogout}>
                     <LogOut size={18} />
                     <span>Logout</span>
                 </button>

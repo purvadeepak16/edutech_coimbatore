@@ -1,7 +1,7 @@
-import { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from './layout/MainLayout';
 import LandingPage from './pages/LandingPage';
+import { AuthProvider, useAuth } from './context/AuthContext';
 
 // Page imports
 import DashboardPage from './pages/DashboardPage';
@@ -20,15 +20,11 @@ import ExamCountdownPage from './pages/ExamCountdownPage';
 import './App.css';
 import './pages/PageStyles.css';
 
-function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+function AppContent() {
+  const { currentUser } = useAuth();
 
-  const handleLogin = () => {
-    setIsLoggedIn(true);
-  };
-
-  if (!isLoggedIn) {
-    return <LandingPage onLogin={handleLogin} />;
+  if (!currentUser) {
+    return <LandingPage />;
   }
 
   return (
@@ -54,6 +50,14 @@ function App() {
         </Routes>
       </MainLayout>
     </BrowserRouter>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 

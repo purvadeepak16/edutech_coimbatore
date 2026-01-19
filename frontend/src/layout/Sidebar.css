@@ -125,6 +125,13 @@
     width: fit-content;
 }
 
+.logout-error {
+    color: var(--color-danger);
+    font-size: 12px;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
 .logout-btn {
     display: flex;
     align-items: center;
