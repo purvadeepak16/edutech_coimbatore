@@ -3,6 +3,7 @@ import { Users, Plus, Compass, Video, Trash } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './StudyGroupsSection.css';
 import { useAuth } from '../context/AuthContext';
+import GroupChatPanel from '../components/GroupChatPanel';
 
 const API_BASE = 'http://localhost:5000/api/study-groups';
 
@@ -49,6 +50,8 @@ const StudyGroupsSection = () => {
     const [error, setError] = useState(null);
     const navigate = useNavigate();
     const { currentUser } = useAuth();
+    const [selectedGroupId, setSelectedGroupId] = useState(null);
+    const [isChatOpen, setIsChatOpen] = useState(false);
 
     /* ---------- FETCH GROUPS ---------- */
     useEffect(() => {
@@ -115,9 +118,10 @@ const StudyGroupsSection = () => {
         }
     };
 
-    /* ---------- VIEW GROUP ---------- */
+    /* ---------- VIEW GROUP (open chat) ---------- */
     const handleViewGroup = (groupId) => {
-        navigate(`/study-groups/${groupId}`);
+        setSelectedGroupId(groupId);
+        setIsChatOpen(true);
     };
 
     /* ---------- DELETE GROUP ---------- */
@@ -154,6 +158,13 @@ const StudyGroupsSection = () => {
                     </button>
                 </div>
             </div>
+
+            {/* Chat panel (slide-in) */}
+            <GroupChatPanel
+                groupId={isChatOpen ? selectedGroupId : null}
+                onClose={() => { setIsChatOpen(false); setSelectedGroupId(null); }}
+                authUser={currentUser}
+            />
 
             {/* -------- GROUP LIST -------- */}
             <div className="groups-grid">
