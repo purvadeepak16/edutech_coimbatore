@@ -1,111 +1,243 @@
-import React, { useState } from 'react';
-import { Network, AlertCircle, Lock, CheckCircle2 } from 'lucide-react';
-import MindMap from '../components/MindMap';
-import './KnowledgeGraphSection.css';
+import React, { useState } from "react";
+import { Network, AlertCircle, Lock, CheckCircle2 } from "lucide-react";
+import MindMap from "../components/MindMap";
+import "./KnowledgeGraphSection.css";
+import { useStudyMap } from "../context/StudyMapContext";
 
-const TreeNode = ({ title, status, progress, children, isLast }) => {
-    const getStatusIcon = (status) => {
-        switch (status) {
-            case 'mastered': return <CheckCircle2 size={16} color="var(--color-success)" />;
-            case 'weak': return <AlertCircle size={16} color="var(--color-danger)" />;
-            case 'locked': return <Lock size={16} color="var(--color-soft-blue)" />;
-            default: return <div className="status-dot in-progress"></div>;
-        }
-    };
-
-    const getStatusColor = (status) => {
-        switch (status) {
-            case 'mastered': return 'var(--color-success)';
-            case 'weak': return 'var(--color-danger)';
-            case 'locked': return 'var(--color-gray-light)';
-            case 'inprogress': return 'var(--color-warning)';
-            default: return 'var(--color-navy)';
-        }
-    };
-
-    return (
-        <div className="tree-node-wrapper">
-            <div className={`tree-node ${status}`}>
-                <div className="node-content">
-                    {getStatusIcon(status)}
-                    <span className="node-title">{title}</span>
-                    {progress && <span className="node-progress" style={{ color: getStatusColor(status) }}>{progress}</span>}
-                </div>
-            </div>
-            {children && (
-                <div className="tree-children">
-                    {children}
-                </div>
-            )}
-        </div>
-    );
+/* ---------- Tree Node ---------- */
+const toText = (v) => {
+  if (typeof v === "string") return v;
+  if (v && typeof v === "object") {
+    if (typeof v.title === "string") return v.title;
+    if (typeof v.name === "string") return v.name;
+  }
+  try { return String(v); } catch { return ""; }
 };
 
+const TreeNode = ({ title, status, progress, children }) => {
+  const iconMap = {
+    mastered: <CheckCircle2 size={16} color="green" />,
+    weak: <AlertCircle size={16} color="red" />,
+    locked: <Lock size={16} color="gray" />,
+  };
+
+  return (
+    <div className="tree-node-wrapper">
+      <div className={`tree-node ${status}`}>
+        <div className="node-content">
+          {iconMap[status] || <div className="status-dot in-progress" />}
+          <span className="node-title">{toText(title)}</span>
+          {progress && <span className="node-progress">{toText(progress)}</span>}
+        </div>
+      </div>
+      {children && <div className="tree-children">{children}</div>}
+    </div>
+  );
+};
+
+/* ---------- MAIN ---------- */
 const KnowledgeGraphSection = () => {
-    const [isMindMapOpen, setIsMindMapOpen] = useState(false);
+  const [isMindMapOpen, setIsMindMapOpen] = useState(false);
 
-    return (
-        <section className="knowledge-graph-section">
-            <div className="section-header-row">
-                <h2>Your Learning Map</h2>
-                <div className="legend">
-                    <span className="legend-item"><span className="dot mastered"></span> Mastered</span>
-                    <span className="legend-item"><span className="dot inprogress"></span> In Progress</span>
-                    <span className="legend-item"><span className="dot weak"></span> Weak</span>
-                    <span className="legend-item"><span className="dot locked"></span> Locked</span>
-                </div>
-            </div>
+  const {
+    topic,
+    setTopic,
+    mindMapData,
+    setMindMapData,
+    learningMapData,
+    setLearningMapData,
+    loading,
+    setLoading,
+  } = useStudyMap();
 
-            <div className="graph-container">
-                <div className="root-node">
-                    <h3>📚 Biology</h3>
-                </div>
+  const normalizeLearningMap = (lm, fallbackMindMap) => {
+    if (!lm) return null;
 
-                <div className="tree-structure">
-                    {/* Unit 1 */}
-                    <div className="branch">
-                        <TreeNode title="Unit 1: Cell Structure" status="mastered" progress="92%">
-                            <TreeNode title="1.1 Membrane" status="mastered" progress="92%" />
-                            <TreeNode title="1.2 Mitochondria" status="weak" progress="45%" />
-                            <TreeNode title="1.3 Nucleus" status="mastered" progress="88%" isLast={true} />
-                        </TreeNode>
-                    </div>
+    const toTopicObj = (t) => {
+      if (typeof t === "string") {
+        return { title: t, status: "inprogress", progress: "40%" };
+      }
+      if (t && typeof t === "object") {
+        if (Array.isArray(t.children)) {
+          // If AI mistakenly returned a mind-map branch
+          return t.children.map((c) => toTopicObj(c)).flat();
+        }
+        return {
+          title: toText(t.title ?? t),
+          status: t.status ?? "inprogress",
+          progress: typeof t.progress === "string" ? t.progress : "40%",
+        };
+      }
+      return { title: toText(t), status: "inprogress", progress: "40%" };
+    };
 
-                    {/* Unit 2 */}
-                    <div className="branch">
-                        <TreeNode title="Unit 2: Genetics" status="inprogress" progress="In Progress">
-                            <div className="dependency-line">Needs Unit 1: 85%+</div>
-                        </TreeNode>
-                    </div>
+    const unitsSrc = Array.isArray(lm.units)
+      ? lm.units
+      : Array.isArray(fallbackMindMap?.branches)
+      ? fallbackMindMap.branches
+      : [];
 
-                    {/* Unit 3 */}
-                    <div className="branch">
-                        <TreeNode title="Unit 3: Evolution" status="locked" progress="Locked" isLast={true} />
-                    </div>
-                </div>
-            </div>
+    const units = unitsSrc.map((u, idx) => {
+      // If the unit looks like a mindmap branch, convert
+      if (u && typeof u === "object" && Array.isArray(u.children) && !u.topics) {
+        return {
+          title: toText(u.title ?? `Unit ${idx + 1}`),
+          status: idx === 0 ? "mastered" : "inprogress",
+          progress: idx === 0 ? "90%" : "In Progress",
+          topics: u.children.map((c) => toTopicObj(c)).flat(),
+        };
+      }
+      const topics = Array.isArray(u?.topics)
+        ? u.topics
+        : Array.isArray(u?.children)
+        ? u.children
+        : [];
+      const normalizedTopics = topics
+        .map((t) => toTopicObj(t))
+        .flat()
+        .filter(Boolean);
+      return {
+        title: toText(u?.title ?? `Unit ${idx + 1}`),
+        status: u?.status ?? (idx === 0 ? "mastered" : "inprogress"),
+        progress: typeof u?.progress === "string" ? u.progress : (idx === 0 ? "90%" : "In Progress"),
+        topics: normalizedTopics,
+      };
+    });
 
-            <div className="graph-footer">
-                <div className="summary-stats">
-                    <span>🟢 5 Mastered</span>
-                    <span>🟡 3 In Progress</span>
-                    <span>🔴 2 Weak</span>
-                    <span>🔵 1 Locked</span>
-                </div>
-                <div className="actions">
-                    <button className="action-link" onClick={() => setIsMindMapOpen(true)}>
-                        <Network size={16} />
-                        Open Visual Mind Map
-                    </button>
-                    <a href="#">View Full Syllabus</a>
-                    <a href="#">Download Study Map</a>
-                </div>
-            </div>
+    return {
+      subject: toText(lm.subject ?? fallbackMindMap?.center ?? ""),
+      units,
+    };
+  };
 
-            <MindMap isOpen={isMindMapOpen} onClose={() => setIsMindMapOpen(false)} />
-        </section>
-    );
+  const generateMindMapFromAI = async () => {
+    if (!topic.trim()) return alert("Enter a topic");
+
+    setLoading(true);
+      let timeoutId;
+    try {
+      // Setup timeout
+      const controller = new AbortController();
+      timeoutId = setTimeout(() => controller.abort(), 30000); // 30 seconds
+
+      // Get API URL from env or use default
+      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+      console.log("📤 Sending request to:", API_URL);
+
+      const res = await fetch(`${API_URL}/api/mindmap/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topic }),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+     if (!res.ok) {
+       throw new Error(`API error: ${res.status} ${res.statusText}`);
+     }
+
+
+      const data = await res.json();
+       console.log("✅ AI DATA:", data);
+
+       if (!data.mindMap || !data.learningMap) {
+         throw new Error("Invalid API response structure");
+       }
+
+      setMindMapData(data.mindMap);
+      const normalized = normalizeLearningMap(data.learningMap, data.mindMap);
+      console.log("🧹 Normalized LearningMap:", normalized);
+      setLearningMapData(normalized);
+     } catch (error) {
+       clearTimeout(timeoutId);
+       if (error.name === 'AbortError') {
+         console.error("❌ Request timeout:", error);
+         alert("Request timed out after 30 seconds. Is the backend running?");
+       } else {
+       console.error("❌ Error:", error);
+       alert(`Failed to generate mind map: ${error.message}`);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const checkBackendHealth = async () => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+      const res = await fetch(`${API_URL}/api/health`);
+      const data = await res.json();
+      console.log("✅ Backend health check passed:", data);
+      alert(`✅ Backend is healthy!\n\nStatus: ${data.status}\nTime: ${data.timestamp}`);
+    } catch (error) {
+      console.error("❌ Backend health check failed:", error);
+      alert(`❌ Cannot connect to backend!\n\nError: ${error.message}\n\nMake sure the backend is running on http://localhost:5000`);
+    }
+  };
+
+  return (
+    <section className="knowledge-graph-section">
+      {/* AI INPUT */}
+      <div className="ai-generate-bar">
+        <input
+          value={topic}
+          onChange={(e) => setTopic(e.target.value)}
+          placeholder="Enter topic"
+        />
+        <button onClick={generateMindMapFromAI}>
+          {loading ? "Generating..." : "Generate AI"}
+        </button>
+        <button onClick={checkBackendHealth} style={{ marginLeft: 8 }}>
+          🏥 Health
+        </button>
+      </div>
+
+      <h2>Your Learning Map</h2>
+
+      {/* LEARNING MAP */}
+      {learningMapData && (
+        <div className="graph-container">
+          <div className="root-node">
+            <h3>📚 {learningMapData.subject}</h3>
+          </div>
+
+          <div className="tree-structure">
+            {learningMapData.units.map((unit, i) => (
+              <div className="branch" key={i}>
+                <TreeNode
+                  title={unit.title}
+                  status={unit.status}
+                  progress={unit.progress}
+                >
+                  {unit.topics?.map((t, j) => (
+                    <TreeNode
+                      key={j}
+                      title={t.title}
+                      status={t.status}
+                      progress={t.progress}
+                    />
+                  ))}
+                </TreeNode>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* OPEN VISUAL MAP */}
+      <button
+        className="action-link"
+        onClick={() => {
+          if (!mindMapData) return alert("Generate AI first");
+          setIsMindMapOpen(true);
+        }}
+      >
+        <Network size={16} /> Open Visual Mind Map
+      </button>
+
+      <MindMap isOpen={isMindMapOpen} onClose={() => setIsMindMapOpen(false)} />
+    </section>
+  );
 };
 
 export default KnowledgeGraphSection;
-
