@@ -178,3 +178,44 @@
     font-weight: 600;
     font-size: 13px;
 }
+
+/* Modal / Create group styles */
+.modal-backdrop{
+    position: fixed;
+    inset: 0;
+    background: rgba(10,12,18,0.45);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:1200;
+}
+.modal-card{
+    width: 560px;
+    max-width: calc(100% - 48px);
+    background: linear-gradient(180deg, #ffffff, #fbfdff);
+    border-radius: 12px;
+    box-shadow: 0 12px 36px rgba(10,20,30,0.12);
+    padding: 16px 18px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    border: 1px solid rgba(10,20,30,0.04);
+}
+.modal-header{display:flex; align-items:center; justify-content:space-between; gap:12px}
+.modal-header h3{margin:0; font-size:18px}
+.modal-close{background:transparent;border:none;font-size:16px;cursor:pointer;padding:6px;border-radius:8px}
+.modal-body{display:flex; flex-direction:column; gap:12px; padding-top:4px}
+.modal-label{font-size:13px;color:rgba(10,20,30,0.7);padding-left:4px}
+.modal-input, .modal-textarea{
+    width:100%;
+    padding:10px 12px;
+    border-radius:10px;
+    border:1px solid rgba(10,20,30,0.06);
+    background: #fbfbfe;
+    font-size:14px;
+}
+.modal-textarea{min-height:96px; resize:vertical}
+.modal-actions{display:flex; align-items:center; justify-content:space-between; padding-top:6px}
+.modal-actions-right{display:flex; gap:10px}
+.btn-cancel{background:transparent;border:1px solid rgba(10,20,30,0.06);padding:8px 14px;border-radius:10px;cursor:pointer}
+.btn-create-primary{background:var(--color-soft-teal);color:white;padding:8px 14px;border-radius:10px;border:none;cursor:pointer}

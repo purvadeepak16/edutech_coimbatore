@@ -6,6 +6,7 @@ import {
   getStudyGroup,
   joinStudyGroup,
   sendMessage,
+  getMessages,
   approveRequest,
   leaveStudyGroup,
   deleteStudyGroup,
@@ -27,6 +28,8 @@ router.post("/:id/join", auth, joinStudyGroup);
 
 // Chat
 router.post("/:id/messages", auth, sendMessage);
+// Fetch messages
+router.get("/:id/messages", auth, getMessages);
 
 // Leave
 router.post("/:id/leave", auth, leaveStudyGroup);

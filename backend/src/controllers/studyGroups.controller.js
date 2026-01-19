@@ -187,6 +187,50 @@ export const sendMessage = async (req, res) => {
   }
 };
 
+export const getMessages = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?.id;
+    if (!id) return res.status(400).json({ success: false, message: 'Group id required' });
+
+    const groupRef = db.collection('studyGroups').doc(id);
+    const groupDoc = await groupRef.get();
+    if (!groupDoc.exists) return res.status(404).json({ success: false, message: 'Group not found' });
+    const group = groupDoc.data();
+
+    // For private groups, require membership
+    if (group.visibility === 'private') {
+      const memberDoc = await groupRef.collection('members').doc(userId).get();
+      const isMember = memberDoc.exists || userId === group.organizerId;
+      if (!isMember) return res.status(403).json({ success: false, message: 'Only members can view messages' });
+    }
+
+    // fetch messages ordered by createdAt asc
+    const snap = await groupRef.collection('messages').orderBy('createdAt', 'asc').limit(1000).get();
+    const messages = snap.docs.map(d => {
+      const data = d.data();
+      let createdAt = null;
+      try {
+        createdAt = data.createdAt && data.createdAt.toDate ? data.createdAt.toDate().toISOString() : (data.createdAt || new Date().toISOString());
+      } catch (e) {
+        createdAt = data.createdAt || new Date().toISOString();
+      }
+      return {
+        id: d.id,
+        text: data.text,
+        senderId: data.senderId,
+        senderName: data.senderName,
+        createdAt,
+      };
+    });
+
+    res.json({ success: true, messages });
+  } catch (err) {
+    console.error('Get messages error:', err);
+    res.status(500).json({ success: false, message: 'Failed to fetch messages', error: err.message });
+  }
+};
+
 export const joinStudyGroup = async (req, res) => {
   try {
     const { id } = req.params;

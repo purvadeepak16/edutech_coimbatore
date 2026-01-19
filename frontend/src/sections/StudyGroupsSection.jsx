@@ -193,21 +193,36 @@ const StudyGroupsSection = () => {
             {/* -------- CREATE MODAL -------- */}
             {showCreate && (
                 <div className="modal-backdrop">
-                    <div className="modal">
-                        <h3>Create Study Group</h3>
-                        <input
-                            placeholder="Group Name"
-                            value={form.name}
-                            onChange={e => setForm({ ...form, name: e.target.value })}
-                        />
-                        <textarea
-                            placeholder="Description"
-                            value={form.description}
-                            onChange={e => setForm({ ...form, description: e.target.value })}
-                        />
+                    <div className="modal-card">
+                        <div className="modal-header">
+                            <h3>Create Study Group</h3>
+                            <button className="modal-close" onClick={() => setShowCreate(false)}>✕</button>
+                        </div>
+
+                        <div className="modal-body">
+                            <label className="modal-label">Group Name</label>
+                            <input
+                                className="modal-input"
+                                placeholder="e.g., Exam Prep — Chemistry"
+                                value={form.name}
+                                onChange={e => setForm({ ...form, name: e.target.value })}
+                            />
+
+                            <label className="modal-label">Description</label>
+                            <textarea
+                                className="modal-textarea"
+                                placeholder="Short description (optional)"
+                                value={form.description}
+                                onChange={e => setForm({ ...form, description: e.target.value })}
+                            />
+                        </div>
+
                         <div className="modal-actions">
-                            <button onClick={handleCreateGroup}>Create</button>
-                            <button onClick={() => setShowCreate(false)}>Cancel</button>
+                            <div />
+                            <div className="modal-actions-right">
+                                <button className="btn-cancel" onClick={() => setShowCreate(false)}>Cancel</button>
+                                <button className="btn-create-primary" onClick={handleCreateGroup}>Create</button>
+                            </div>
                         </div>
                     </div>
                 </div>
