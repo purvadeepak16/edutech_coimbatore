@@ -6,6 +6,8 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import mindmapRoutes from './routes/mindmap.routes.js';
+import zombieRoutes from './routes/zombieRoutes.js';
+import openrouterRoutes from './routes/openrouter.routes.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -41,6 +43,8 @@ const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || 'http://localhost:5173';
 app.use(cors({ origin: FRONTEND_ORIGIN }));
 app.use(express.json());
 app.use('/api/mindmap', mindmapRoutes);
+app.use('/api/zombie', zombieRoutes);
+app.use('/api/openrouter', openrouterRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {

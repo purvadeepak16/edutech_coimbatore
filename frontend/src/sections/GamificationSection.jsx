@@ -1,9 +1,10 @@
 import React from 'react';
 import { Gamepad2, Brain, Trophy, Zap, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 import './GamificationSection.css';
 
-const GameCard = ({ title, description, icon: Icon, color, difficulty }) => (
+const GameCard = ({ title, description, icon: Icon, color, difficulty, onClick }) => (
     <div className="game-card" style={{ borderColor: `var(--color-${color})` }}>
         <div className="game-card-header">
             <div className="game-icon-box" style={{ backgroundColor: `var(--color-${color}-light)` }}>
@@ -16,7 +17,7 @@ const GameCard = ({ title, description, icon: Icon, color, difficulty }) => (
             <p>{description}</p>
         </div>
         <div className="game-card-footer">
-            <Button className="game-start-btn">
+            <Button className="game-start-btn" onClick={onClick}>
                 <Gamepad2 size={18} />
                 <span>Start Game</span>
             </Button>
@@ -25,13 +26,15 @@ const GameCard = ({ title, description, icon: Icon, color, difficulty }) => (
 );
 
 const GamificationSection = () => {
+    const navigate = useNavigate();
     const games = [
         {
-            title: "Flashcard Frenzy",
-            description: "Master your active recall by matching terms with definitions under the clock.",
+            title: "Zombie Survival",
+            description: "A mindful decision-making game to sharpen your reflexes and focus. Can you survive the 14-day quarantine?",
             icon: Brain,
             color: "soft-pink",
-            difficulty: "Medium"
+            difficulty: "Medium",
+            onClick: () => navigate('/zombie-survival')
         },
         {
             title: "Quick Quiz",
