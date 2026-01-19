@@ -23,7 +23,12 @@ dist-ssr
 *.sln
 *.sw?
 
-# Backend secrets
+# Backend secrets (backend-local files)
 /backend/serviceAccount.json
 /backend/.env
 /backend/.env.local
+
+# Root/local secrets
+serviceAccount.json
+.env
+.env.local
