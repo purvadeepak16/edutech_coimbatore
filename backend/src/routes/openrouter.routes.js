@@ -1,0 +1,59 @@
+import express from 'express';
+import fetch from 'node-fetch';
+
+const router = express.Router();
+
+// POST /ask - proxy a prompt to OpenRouter (server-side key required)
+router.post('/ask', async (req, res) => {
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey) return res.status(500).json({ error: 'OpenRouter API key not configured on server' });
+
+  const { prompt, model } = req.body;
+  if (!prompt) return res.status(400).json({ error: 'Missing prompt in request body' });
+
+  try {
+    const body = {
+      model: model || 'gpt-4o-mini',
+      messages: [
+        { role: 'user', content: prompt }
+      ]
+    };
+
+    const r = await fetch('https://api.openrouter.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify(body)
+    });
+
+    const json = await r.json();
+
+    // Try to extract a reasonable assistant text from common response shapes
+    let assistantText = '';
+    if (json?.choices && json.choices[0]) {
+      const ch = json.choices[0];
+      if (ch.message) {
+        const msg = ch.message;
+        if (typeof msg === 'string') assistantText = msg;
+        else if (Array.isArray(msg.content)) {
+          const content = msg.content.find(c => c.type === 'output_text') || msg.content[0];
+          assistantText = content?.text || content?.content || JSON.stringify(content);
+        } else if (msg.content && (msg.content.text || msg.content[0]?.text)) {
+          assistantText = msg.content.text || msg.content[0].text;
+        } else {
+          assistantText = JSON.stringify(msg);
+        }
+      } else if (ch.text) assistantText = ch.text;
+      else if (ch.delta) assistantText = ch.delta.content || JSON.stringify(ch.delta);
+    }
+
+    return res.json({ answer: assistantText, raw: json });
+  } catch (err) {
+    console.error('OpenRouter proxy error:', err?.message || err);
+    return res.status(500).json({ error: 'OpenRouter request failed', details: err?.message });
+  }
+});
+
+export default router;

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Lightbulb, Send, Clock, ThumbsUp, ArrowRight } from 'lucide-react';
 import aiRobotImg from '../assets/ai-robot.png';
 import './AIDoubtSolverSection.css';
@@ -20,6 +20,36 @@ const DoubtItem = ({ question, time, confidence, isLast }) => (
 );
 
 const AIDoubtSolverSection = () => {
+    const [query, setQuery] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [answer, setAnswer] = useState(null);
+    const [error, setError] = useState(null);
+
+    const onSend = async () => {
+        if (!query.trim()) return;
+        setLoading(true);
+        setAnswer(null);
+        setError(null);
+        try {
+            const { askOpenRouter } = await import('../services/aiApi');
+            const res = await askOpenRouter(query);
+            if (res?.answer) setAnswer(res.answer);
+            else if (res?.raw) setAnswer(JSON.stringify(res.raw));
+            else setError('No response from AI');
+        } catch (err) {
+            setError(err?.message || 'Request failed');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const onKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            onSend();
+        }
+    };
+
     return (
         <section className="ai-doubt-section">
             {/* Animated Robot Mascot */}
@@ -39,10 +69,26 @@ const AIDoubtSolverSection = () => {
                 </div>
 
                 <div className="input-container">
-                    <input type="text" placeholder="What's confusing you?" />
-                    <button className="send-btn">
-                        <Send size={18} />
+                    <input
+                        type="text"
+                        placeholder="What's confusing you?"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        onKeyDown={onKeyDown}
+                    />
+                    <button className="send-btn" onClick={onSend} disabled={loading}>
+                        {loading ? 'Thinking...' : <Send size={18} />}
                     </button>
+                </div>
+
+                <div className="ai-response">
+                    {error && <div className="ai-error">Error: {error}</div>}
+                    {answer && (
+                        <div className="ai-answer">
+                            <h4>AI Answer</h4>
+                            <div className="ai-answer-text">{answer}</div>
+                        </div>
+                    )}
                 </div>
 
                 <div className="recent-questions">

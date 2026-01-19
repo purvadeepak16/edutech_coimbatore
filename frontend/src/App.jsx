@@ -18,6 +18,7 @@ import AchievementsPage from './pages/AchievementsPage';
 import ExamCountdownPage from './pages/ExamCountdownPage';
 import PeaceModePage from './pages/PeaceModePage';
 import GamificationPage from './pages/GamificationPage';
+import ZombieGame from './pages/games/ZombieGame';
 
 import './App.css';
 import './pages/PageStyles.css';
@@ -30,37 +31,38 @@ function AppContent() {
   }
 
   return (
-    <BrowserRouter>
-      <MainLayout>
-        <Routes>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/syllabus" element={<SyllabusPage />} />
-          <Route path="/study-plan" element={<DashboardPage />} />
-          <Route path="/learning-modes" element={<DashboardPage />} />
-          <Route path="/mindmap" element={<MindMapPage />} />
-          <Route path="/active-session" element={<DashboardPage />} />
-          <Route path="/ask-ai" element={<AskAIPage />} />
-          <Route path="/mastery-score" element={<MasteryScorePage />} />
-          <Route path="/assessments" element={<AssessmentsPage />} />
-          <Route path="/schedule" element={<SchedulePage />} />
-          <Route path="/parent-view" element={<ParentViewPage />} />
-          <Route path="/gamification" element={<GamificationPage />} />
-          <Route path="/achievements" element={<AchievementsPage />} />
-          <Route path="/groups" element={<StudyGroupsPage />} />
-          <Route path="/exam-countdown" element={<ExamCountdownPage />} />
-          <Route path="/peacemode" element={<PeaceModePage />} />
-        </Routes>
-      </MainLayout>
-    </BrowserRouter>
+    <MainLayout>
+      <Routes>
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/syllabus" element={<SyllabusPage />} />
+        <Route path="/study-plan" element={<DashboardPage />} />
+        <Route path="/learning-modes" element={<DashboardPage />} />
+        <Route path="/mindmap" element={<MindMapPage />} />
+        <Route path="/active-session" element={<DashboardPage />} />
+        <Route path="/ask-ai" element={<AskAIPage />} />
+        <Route path="/mastery-score" element={<MasteryScorePage />} />
+        <Route path="/assessments" element={<AssessmentsPage />} />
+        <Route path="/schedule" element={<SchedulePage />} />
+        <Route path="/parent-view" element={<ParentViewPage />} />
+        <Route path="/gamification" element={<GamificationPage />} />
+        <Route path="/zombie-survival" element={<ZombieGame />} />
+        <Route path="/achievements" element={<AchievementsPage />} />
+        <Route path="/groups" element={<StudyGroupsPage />} />
+        <Route path="/exam-countdown" element={<ExamCountdownPage />} />
+        <Route path="/peacemode" element={<PeaceModePage />} />
+      </Routes>
+    </MainLayout>
   );
 }
 
 function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <BrowserRouter>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 
