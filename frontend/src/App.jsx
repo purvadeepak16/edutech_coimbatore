@@ -16,6 +16,8 @@ import ParentViewPage from './pages/ParentViewPage';
 import WellnessPage from './pages/WellnessPage';
 import AchievementsPage from './pages/AchievementsPage';
 import ExamCountdownPage from './pages/ExamCountdownPage';
+import PeaceModePage from './pages/PeaceModePage';
+import GamificationPage from './pages/GamificationPage';
 
 import './App.css';
 import './pages/PageStyles.css';
@@ -43,10 +45,11 @@ function AppContent() {
           <Route path="/assessments" element={<AssessmentsPage />} />
           <Route path="/schedule" element={<SchedulePage />} />
           <Route path="/parent-view" element={<ParentViewPage />} />
-          <Route path="/wellness" element={<WellnessPage />} />
+          <Route path="/gamification" element={<GamificationPage />} />
           <Route path="/achievements" element={<AchievementsPage />} />
           <Route path="/groups" element={<StudyGroupsPage />} />
           <Route path="/exam-countdown" element={<ExamCountdownPage />} />
+          <Route path="/peacemode" element={<PeaceModePage />} />
         </Routes>
       </MainLayout>
     </BrowserRouter>

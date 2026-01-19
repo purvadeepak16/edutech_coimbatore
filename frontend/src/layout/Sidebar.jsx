@@ -14,7 +14,7 @@ import {
     Sparkles,
     Target,
     ClipboardCheck,
-    Heart,
+    Gamepad2,
     Trophy,
     Clock,
     UserCheck
@@ -116,10 +116,10 @@ const Sidebar = () => {
                             <span>Parent View</span>
                         </Link>
                     </li>
-                    <li className={isActive('/wellness') ? 'active' : ''}>
-                        <Link to="/wellness">
-                            <Heart size={20} />
-                            <span>Wellness</span>
+                    <li className={isActive('/gamification') ? 'active' : ''}>
+                        <Link to="/gamification">
+                            <Gamepad2 size={20} />
+                            <span>Gamification</span>
                         </Link>
                     </li>
                     <li className={isActive('/achievements') ? 'active' : ''}>
@@ -144,6 +144,12 @@ const Sidebar = () => {
                         <Link to="/settings">
                             <Settings size={20} />
                             <span>Settings</span>
+                        </Link>
+                    </li>
+                    <li className={isActive('/peacemode') ? 'active' : ''}>
+                        <Link to="/peacemode" className="peace-mode-btn">
+                            <Sparkles size={20} />
+                            <span>PeaceMode</span>
                         </Link>
                     </li>
                 </ul>

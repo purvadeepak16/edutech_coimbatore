@@ -146,6 +146,33 @@
     color: var(--color-danger);
 }
 
+.peace-mode-item {
+    margin-top: 4px;
+}
+
+.peace-mode-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    color: var(--color-gray-text);
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    width: 100%;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+}
+
+.peace-mode-btn:hover {
+    background-color: var(--color-navy);
+    color: var(--color-white);
+}
+
 /* Mobile/Tablet hidden by default in this basic view, handling responsive later */
 /* Tablet (768px - 1024px) - Collapsed Sidebar */
 @media (max-width: 1200px) and (min-width: 769px) {

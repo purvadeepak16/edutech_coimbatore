@@ -1,67 +1,81 @@
 import React from 'react';
-import { Flame, Trophy, Rocket, Star } from 'lucide-react';
+import { Gamepad2, Brain, Trophy, Zap, Star } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import './GamificationSection.css';
 
-const BadgeCard = ({ title, subtitle, footer, icon: Icon, isLocked, progress }) => (
-    <div className={`badge-card ${isLocked ? 'locked' : 'unlocked'}`}>
-        <div className="badge-icon-wrapper">
-            <Icon size={24} color={isLocked ? 'var(--color-gray-light)' : 'var(--color-warning)'} />
-        </div>
-        <div className="badge-content">
-            <h4>{title}</h4>
-            <div className="badge-details">
-                <p>{subtitle}</p>
-                <span className="badge-footer">{footer}</span>
+const GameCard = ({ title, description, icon: Icon, color, difficulty }) => (
+    <div className="game-card" style={{ borderColor: `var(--color-${color})` }}>
+        <div className="game-card-header">
+            <div className="game-icon-box" style={{ backgroundColor: `var(--color-${color}-light)` }}>
+                <Icon size={32} color={`var(--color-${color})`} />
             </div>
+            <div className="difficulty-tag">{difficulty}</div>
+        </div>
+        <div className="game-card-content">
+            <h3>{title}</h3>
+            <p>{description}</p>
+        </div>
+        <div className="game-card-footer">
+            <Button className="game-start-btn">
+                <Gamepad2 size={18} />
+                <span>Start Game</span>
+            </Button>
         </div>
     </div>
 );
 
 const GamificationSection = () => {
+    const games = [
+        {
+            title: "Flashcard Frenzy",
+            description: "Master your active recall by matching terms with definitions under the clock.",
+            icon: Brain,
+            color: "soft-pink",
+            difficulty: "Medium"
+        },
+        {
+            title: "Quick Quiz",
+            description: "Battle against the AI in a rapid-fire trivia round based on your syllabus.",
+            icon: Zap,
+            color: "soft-teal",
+            difficulty: "Hard"
+        },
+        {
+            title: "Syllabus Sprint",
+            description: "A timed exploration of your notes. Find the key concepts before time runs out!",
+            icon: Trophy,
+            color: "soft-yellow",
+            difficulty: "Easy"
+        }
+    ];
+
     return (
-        <section className="gamification-section">
-            <div className="streak-display">
-                <div className="streak-icon-large">
-                    <Flame size={48} fill="#F59E0B" color="#F59E0B" />
+        <section className="gamification-container">
+            <div className="stats-row">
+                <div className="stat-summary-card">
+                    <div className="stat-icon-circle">
+                        <Star fill="var(--color-warning)" color="var(--color-warning)" />
+                    </div>
+                    <div className="stat-details">
+                        <span className="stat-label">Total Points</span>
+                        <span className="stat-value">12.4k</span>
+                    </div>
                 </div>
-                <div className="streak-info">
-                    <h2>17 DAYS</h2>
-                    <span className="streak-label">CURRENT STREAK</span>
-                    <p className="streak-msg">You're on fire! 💪</p>
+                <div className="stat-summary-card">
+                    <div className="stat-icon-circle">
+                        <Trophy color="var(--color-soft-purple)" />
+                    </div>
+                    <div className="stat-details">
+                        <span className="stat-label">Rank</span>
+                        <span className="stat-value">Gold IV</span>
+                    </div>
                 </div>
             </div>
 
-            <div className="badges-grid">
-                <BadgeCard
-                    title="Consistency Champ"
-                    subtitle="Unlocked 18d ago"
-                    footer="30-day streak"
-                    icon={Trophy}
-                />
-                <BadgeCard
-                    title="Speed Learner"
-                    subtitle="3/5 topics"
-                    footer="2 more to unlock"
-                    icon={Rocket}
-                    isLocked={true}
-                />
-                <BadgeCard
-                    title="Scholar"
-                    subtitle="Week 23: +15 pts"
-                    footer="60% Progress"
-                    icon={Star}
-                    isLocked={true}
-                />
-            </div>
-
-            <div className="weekly-progress">
-                <div className="wp-header">
-                    <span>Weekly Achievement</span>
-                    <span>60%</span>
-                </div>
-                <div className="wp-bar-bg">
-                    <div className="wp-bar-fill" style={{ width: '60%' }}></div>
-                </div>
+            <div className="games-grid">
+                {games.map((game, index) => (
+                    <GameCard key={index} {...game} />
+                ))}
             </div>
         </section>
     );

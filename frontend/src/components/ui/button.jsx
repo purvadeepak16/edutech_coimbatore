@@ -1,0 +1,12 @@
+import React from 'react';
+
+export const Button = ({ children, className = '', ...props }) => {
+    return (
+        <button
+            className={`inline-flex items-center justify-center transition-colors disabled:pointer-events-none disabled:opacity-50 cursor-pointer ${className}`}
+            {...props}
+        >
+            {children}
+        </button>
+    );
+};

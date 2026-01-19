@@ -1,0 +1,317 @@
+/* PeaceMode.css */
+
+.peace-mode-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.peace-mode-container {
+    background: linear-gradient(to bottom right, rgba(46, 16, 101, 0.95), rgba(30, 27, 75, 0.95), rgba(23, 37, 84, 0.95));
+    border-radius: 1.5rem;
+    width: 100%;
+    max-width: 42rem;
+    max-height: 90vh;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(168, 85, 247, 0.3);
+    display: flex;
+    flex-direction: column;
+}
+
+.peace-mode-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.peace-mode-title-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.peace-mode-icon-box {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.75rem;
+    background: linear-gradient(to bottom right, #a855f7, #ec4899);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.peace-mode-title-text h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+}
+
+.peace-mode-title-text p {
+    font-size: 0.875rem;
+    color: #d8b4fe;
+    margin: 0;
+}
+
+.peace-mode-close-btn {
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    color: white;
+    transition: background-color 0.2s;
+}
+
+.peace-mode-close-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.peace-mode-tabs {
+    display: flex;
+    gap: 0.5rem;
+    padding: 1rem;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.peace-mode-tab-btn {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #d8b4fe;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.peace-mode-tab-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.peace-mode-tab-btn.active {
+    background: linear-gradient(to right, #a855f7, #ec4899);
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.peace-mode-content {
+    padding: 1.5rem;
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* Breathing Styles */
+.breathing-patterns-list {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+}
+
+.breathing-pattern-btn {
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    white-space: nowrap;
+    transition: all 0.2s;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #d8b4fe;
+}
+
+.breathing-pattern-btn.active {
+    background-color: #a855f7;
+    color: white;
+}
+
+.breathing-circle-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 0;
+}
+
+.breathing-circle {
+    width: 12rem;
+    height: 12rem;
+    border-radius: 9999px;
+    background: linear-gradient(to bottom right, #a855f7, #ec4899, #3b82f6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.breathing-circle-text {
+    text-align: center;
+    color: white;
+}
+
+.breathing-circle-text p {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.breath-count-text {
+    font-size: 2.25rem;
+    font-weight: 900;
+    margin: 0;
+}
+
+.cycle-text {
+    margin-top: 1.5rem;
+    color: #d8b4fe;
+    font-size: 1.125rem;
+}
+
+.breathing-controls {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+/* Affirmation Styles */
+.affirmation-card {
+    background: linear-gradient(to bottom right, rgba(236, 72, 153, 0.2), rgba(168, 85, 247, 0.2));
+    border: 1px solid rgba(236, 72, 153, 0.3);
+    padding: 3rem;
+    border-radius: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.affirmation-text {
+    font-size: 1.875rem;
+    font-weight: 700;
+    text-align: center;
+    color: white;
+    line-height: 1.4;
+}
+
+/* Sounds Styles */
+.sounds-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.sound-btn {
+    padding: 1.5rem;
+    border-radius: 1rem;
+    transition: all 0.2s;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 2px solid transparent;
+    text-align: center;
+    color: white;
+}
+
+.sound-btn:hover:not(:disabled) {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.sound-btn.active {
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: scale(1.05);
+}
+
+.sound-btn-rain.active {
+    background-image: linear-gradient(to bottom right, rgba(59, 130, 246, 0.2), rgba(6, 182, 212, 0.2));
+}
+
+.sound-btn-ocean.active {
+    background-image: linear-gradient(to bottom right, rgba(20, 184, 166, 0.2), rgba(59, 130, 246, 0.2));
+}
+
+.sound-btn-wind.active {
+    background-image: linear-gradient(to bottom right, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.2));
+}
+
+.sound-btn-birds.active {
+    background-image: linear-gradient(to bottom right, rgba(234, 179, 8, 0.2), rgba(249, 115, 22, 0.2));
+}
+
+.sound-btn-fire.active {
+    background-image: linear-gradient(to bottom right, rgba(249, 115, 22, 0.2), rgba(239, 68, 68, 0.2));
+}
+
+.sound-btn-nature.active {
+    background-image: linear-gradient(to bottom right, rgba(168, 85, 247, 0.2), rgba(236, 72, 153, 0.2));
+}
+
+.sound-emoji {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+}
+
+.sound-name {
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+.volume-card {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 1rem;
+    border-radius: 0.75rem;
+}
+
+.volume-control {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.volume-slider {
+    flex: 1;
+    accent-color: #a855f7;
+}
+
+.volume-percent {
+    color: white;
+    font-size: 0.875rem;
+    width: 3rem;
+    text-align: right;
+}
+
+/* Helper Buttons */
+.peace-mode-action-btn {
+    padding: 1.5rem 2rem;
+    font-size: 1.125rem;
+    font-weight: 700;
+    border-radius: 1rem;
+    transition: all 0.2s;
+    color: white;
+}
+
+.btn-primary {
+    background: linear-gradient(to right, #a855f7, #ec4899);
+}
+
+.btn-primary:hover {
+    filter: brightness(1.1);
+}
+
+.btn-stop {
+    background-color: #ef4444;
+}
+
+.btn-stop:hover {
+    background-color: #dc2626;
+}
+
+.footer-tip {
+    text-align: center;
+    color: #d8b4fe;
+    font-size: 0.875rem;
+    margin-top: 1.5rem;
+}
