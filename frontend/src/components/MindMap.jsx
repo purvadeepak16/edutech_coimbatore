@@ -13,18 +13,82 @@ const COLORS = [
     '#06B6D4', // Cyan
 ];
 
+const loadFromAI = (data, setNodes, nextIdRef) => {
+  let id = 1;
+  const centerId = id++;
+
+  const generatedNodes = [
+    {
+      id: centerId,
+      text: data.center,
+      x: 450,
+      y: 250,
+      color: '#5B9BFF',
+      isCenter: true
+    }
+  ];
+
+  data.branches.forEach((branch, i) => {
+    const parentId = id++;
+    generatedNodes.push({
+      id: parentId,
+      text: branch.title,
+      x: 250 + i * 250,
+      y: 100,
+      color: COLORS[i % COLORS.length],
+      parentId: centerId
+    });
+
+    branch.children.forEach((child, j) => {
+      generatedNodes.push({
+        id: id++,
+        text: child,
+        x: 250 + i * 250,
+        y: 200 + j * 80,
+        color: COLORS[(i + 1) % COLORS.length],
+        parentId: parentId
+      });
+    });
+  });
+
+  nextIdRef.current = id;
+  setNodes(generatedNodes);
+};
+
 const MindMap = ({ isOpen, onClose }) => {
-    const [nodes, setNodes] = useState([
-        { id: 1, text: 'Central Topic', x: 400, y: 250, color: '#5B9BFF', isCenter: true },
-        { id: 2, text: 'New Concept', x: 600, y: 250, color: '#06B6D4', parentId: 1 },
-        { id: 3, text: 'New Concept', x: 400, y: 150, color: '#EF4444', parentId: 1 },
-    ]);
+   const [nodes, setNodes] = useState([]);
+
     const [selectedNode, setSelectedNode] = useState(null);
     const [draggingNode, setDraggingNode] = useState(null);
     const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
     const [showColorPicker, setShowColorPicker] = useState(false);
+    const [aiInput, setAiInput] = useState('');
+    const [loading, setLoading] = useState(false);
     const canvasRef = useRef(null);
     const nextIdRef = useRef(4);
+
+    const handleGenerateFromAI = async () => {
+        if (!aiInput.trim()) return;
+        
+        setLoading(true);
+        try {
+            const res = await fetch("http://localhost:5000/api/mindmap/generate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ topic: aiInput })
+            });
+
+            if (!res.ok) throw new Error('Failed to generate mind map');
+            const data = await res.json();
+            loadFromAI(data, setNodes, nextIdRef);
+            setAiInput('');
+        } catch (err) {
+            console.error('Error generating mind map:', err);
+            alert('Failed to generate mind map. Check console for details.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
         if (isOpen) {
@@ -155,6 +219,26 @@ const MindMap = ({ isOpen, onClose }) => {
                     <div className="toolbar-left">
                         <span className="map-label">Mind Map</span>
                         <span className="map-status">Untitled</span>
+                    </div>
+                    <div className="toolbar-center">
+                        <input
+                            type="text"
+                            placeholder="Enter topic (e.g. Machine Learning)"
+                            value={aiInput}
+                            onChange={(e) => setAiInput(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') handleGenerateFromAI();
+                            }}
+                            className="ai-input-field"
+                            disabled={loading}
+                        />
+                        <button 
+                            className="toolbar-btn generate-btn" 
+                            onClick={handleGenerateFromAI}
+                            disabled={loading}
+                        >
+                            {loading ? '⏳ Generating...' : '✨ Generate from AI'}
+                        </button>
                     </div>
                     <div className="toolbar-right">
                         <button className="toolbar-btn" onClick={clearMap}>
