@@ -1,0 +1,19 @@
+.page-header {
+    background-color: var(--color-white);
+    padding: 32px;
+    border-radius: 20px;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 24px;
+}
+
+.page-header h1 {
+    font-size: 32px;
+    color: var(--color-navy);
+    margin-bottom: 8px;
+}
+
+.page-header p {
+    font-size: 16px;
+    color: var(--color-gray-text);
+    margin: 0;
+}

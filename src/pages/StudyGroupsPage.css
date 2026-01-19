@@ -1,0 +1,65 @@
+.study-groups-page {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.page-header {
+    background: linear-gradient(135deg, var(--color-soft-teal), var(--color-soft-purple));
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: var(--shadow-sm);
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 40px;
+}
+
+.header-text {
+    flex: 1;
+}
+
+.page-header h1 {
+    font-size: 36px;
+    color: var(--color-white);
+    margin-bottom: 8px;
+}
+
+.page-header p {
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+}
+
+.header-illustration {
+    width: 280px;
+    height: auto;
+    object-fit: contain;
+    animation: floatIllustration 3s ease-in-out infinite;
+}
+
+@keyframes floatIllustration {
+
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .header-illustration {
+        width: 200px;
+    }
+}

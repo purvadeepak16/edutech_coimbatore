@@ -1,0 +1,39 @@
+.quick-actions-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background-color: var(--color-white);
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 1000;
+    box-shadow: 0 -4px 12px rgba(45, 62, 80, 0.05);
+    padding: 0 16px;
+}
+
+.action-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: none;
+    border: none;
+    color: var(--color-gray-text);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 8px;
+    width: 64px;
+    border-radius: 8px;
+}
+
+.action-item.active {
+    color: var(--color-navy);
+    background-color: rgba(45, 62, 80, 0.05);
+}
+
+.action-item:active {
+    transform: scale(0.95);
+}

@@ -1,0 +1,297 @@
+.mind-map-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(8px);
+}
+
+.mind-map-container {
+    background: linear-gradient(135deg, #1a1f36 0%, #0f1419 100%);
+    border-radius: 24px;
+    width: 90%;
+    max-width: 950px;
+    height: 85vh;
+    max-height: 650px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+}
+
+.mind-map-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.mind-map-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.mind-map-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+}
+
+.close-btn {
+    width: 36px;
+    height: 36px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+
+.close-btn:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+.mind-map-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.map-label {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 500;
+}
+
+.map-status {
+    background-color: rgba(202, 138, 4, 0.3);
+    color: #FBBF24;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.toolbar-right {
+    display: flex;
+    gap: 8px;
+}
+
+.toolbar-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background-color: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.toolbar-btn:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.mind-map-canvas {
+    flex: 1;
+    position: relative;
+    background: linear-gradient(135deg, #1e2640 0%, #141824 100%);
+    overflow: hidden;
+    cursor: grab;
+}
+
+.mind-map-canvas:active {
+    cursor: grabbing;
+}
+
+.mind-node {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    padding: 12px 24px;
+    border-radius: 24px;
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: move;
+    user-select: none;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s, box-shadow 0.2s;
+    min-width: 120px;
+    text-align: center;
+}
+
+.mind-node:hover {
+    transform: translate(-50%, -50%) scale(1.05);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+}
+
+.mind-node.selected {
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5);
+}
+
+.node-input {
+    background: transparent;
+    border: none;
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+    text-align: center;
+    width: 100%;
+    outline: none;
+    cursor: text;
+}
+
+.delete-node-btn {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 24px;
+    height: 24px;
+    background-color: #EF4444;
+    border: 2px solid white;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+}
+
+.delete-node-btn:hover {
+    transform: scale(1.1);
+}
+
+.color-picker-toggle {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    backdrop-filter: blur(10px);
+}
+
+.color-picker-toggle:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.color-picker-panel {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    background: rgba(15, 20, 25, 0.4);
+    border: 2px solid #00D1FF;
+    border-radius: 24px;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 20px rgba(0, 209, 255, 0.2);
+    width: 200px;
+}
+
+.color-picker-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 15px;
+    color: #8FD8FF;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+}
+
+.color-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.color-option {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.color-option:hover {
+    transform: scale(1.15);
+}
+
+.color-option.active {
+    outline: 2px solid white;
+    outline-offset: 2px;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+}
+
+@media (max-width: 768px) {
+    .mind-map-container {
+        width: 95%;
+        height: 90vh;
+    }
+
+    .toolbar-right {
+        flex-wrap: wrap;
+    }
+
+    .toolbar-btn {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+
+    .color-picker-panel {
+        right: 15px;
+        bottom: 15px;
+        width: 160px;
+        padding: 15px;
+    }
+}

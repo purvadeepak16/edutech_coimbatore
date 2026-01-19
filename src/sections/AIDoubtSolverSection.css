@@ -1,0 +1,247 @@
+.ai-doubt-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: relative;
+}
+
+/* Animated Robot Mascot */
+.ai-robot-mascot {
+    position: absolute;
+    top: -100px;
+    right: 60px;
+    z-index: 10;
+    animation: robotFloat 3s ease-in-out infinite;
+}
+
+@keyframes robotFloat {
+
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-12px);
+    }
+}
+
+.robot-image {
+    width: 100px;
+    height: auto;
+    /* Remove white background using CSS filters */
+    filter:
+        brightness(1.1) contrast(1.1) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
+    background: transparent;
+    /* Make white pixels transparent */
+    mix-blend-mode: multiply;
+}
+
+.robot-speech-bubble {
+    position: absolute;
+    top: 20px;
+    right: -110px;
+    background-color: var(--color-white);
+    padding: 10px 16px;
+    border-radius: 12px;
+    border: var(--neo-border);
+    box-shadow: var(--neo-shadow);
+    white-space: nowrap;
+    animation: bubblePop 0.5s ease-out;
+}
+
+.robot-speech-bubble::before {
+    content: '';
+    position: absolute;
+    bottom: 50%;
+    left: -8px;
+    transform: translateY(50%);
+    width: 0;
+    height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-right: 8px solid var(--color-white);
+}
+
+.robot-speech-bubble p {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-navy);
+}
+
+@keyframes bubblePop {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.doubt-card {
+    background-color: var(--color-soft-blue);
+    border-radius: 16px;
+    padding: 24px;
+    border: var(--neo-border);
+    box-shadow: var(--neo-shadow-large);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.card-header .icon-wrapper {
+    width: 40px;
+    height: 40px;
+    background-color: var(--color-navy);
+    border-radius: 8px;
+    border: 1.5px solid var(--color-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-header h3 {
+    font-size: 18px;
+    color: var(--color-navy);
+    font-weight: 700;
+}
+
+.input-container {
+    display: flex;
+    gap: 12px;
+    background-color: var(--color-white);
+    padding: 8px;
+    border-radius: 10px;
+    border: var(--neo-border);
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
+}
+
+.input-container input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    padding: 8px 12px;
+    color: var(--color-navy);
+    font-weight: 500;
+}
+
+.input-container input::placeholder {
+    color: var(--color-gray-light);
+}
+
+.send-btn {
+    width: 36px;
+    height: 36px;
+    background-color: var(--color-navy);
+    color: var(--color-white);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+}
+
+.send-btn:hover {
+    transform: scale(1.05);
+}
+
+.recent-questions h4 {
+    font-size: 13px;
+    text-transform: uppercase;
+    color: var(--color-navy);
+    opacity: 0.6;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+}
+
+.questions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    background-color: var(--color-white);
+    border-radius: 10px;
+    border: var(--neo-border);
+    overflow: hidden;
+}
+
+.doubt-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    transition: background-color 0.2s;
+    cursor: pointer;
+}
+
+.doubt-item:hover {
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
+.doubt-item.last {
+    border-bottom: none;
+}
+
+.doubt-question {
+    font-size: 14px;
+    color: var(--color-navy);
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.doubt-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 12px;
+    color: var(--color-gray-text);
+}
+
+.doubt-meta span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.view-all-btn {
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--color-navy);
+    margin-top: 4px;
+    padding: 8px 16px;
+    background-color: var(--color-white);
+    border: var(--neo-border);
+    border-radius: 8px;
+    box-shadow: 2px 2px 0 var(--color-navy);
+    transition: all 0.2s;
+}
+
+.view-all-btn:hover {
+    transform: translate(1px, 1px);
+    box-shadow: 0px 0px 0 var(--color-navy);
+    background-color: var(--color-white);
+}
+
+@media (max-width: 768px) {
+    .ai-robot-mascot {
+        display: none;
+        /* Hide robot on mobile for cleaner layout */
+    }
+}

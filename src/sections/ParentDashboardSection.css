@@ -1,0 +1,160 @@
+.parent-dashboard-section {
+    background-color: var(--color-white);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 24px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.parent-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.report-card {
+    background-color: var(--color-cream-light);
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+.report-card h3 {
+    font-size: 16px;
+    color: var(--color-navy);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.summary-stats {
+    display: flex;
+    justify-content: space-between;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.stat-item .label {
+    font-size: 12px;
+    color: var(--color-gray-text);
+}
+
+.stat-item .value {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--color-navy);
+}
+
+.stat-item .trend {
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.trend.positive {
+    color: var(--color-green);
+}
+
+.trend.neutral {
+    color: var(--color-gray-text);
+}
+
+.alert-icon {
+    color: #F59E0B;
+}
+
+.weak-topics-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 16px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.weak-topics-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.5);
+    padding: 8px 12px;
+    border-radius: 8px;
+}
+
+.score.low {
+    color: #EF4444;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.score.medium {
+    color: #F59E0B;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.recommendation {
+    font-size: 12px;
+    color: var(--color-navy);
+    font-style: italic;
+    background-color: rgba(245, 158, 11, 0.1);
+    /* Amber tint */
+    padding: 8px;
+    border-radius: 6px;
+}
+
+.mock-chart {
+    height: 100px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    margin-bottom: 8px;
+}
+
+.bar {
+    width: 12%;
+    background-color: rgba(45, 62, 80, 0.2);
+    border-radius: 4px 4px 0 0;
+    transition: height 0.5s ease;
+}
+
+.bar.active {
+    background-color: var(--color-soft-teal);
+}
+
+.chart-label {
+    text-align: center;
+    font-size: 12px;
+    color: var(--color-green);
+    font-weight: 600;
+}
+
+.btn-share,
+.btn-download {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btn-share {
+    background-color: var(--color-soft-purple);
+    color: var(--color-navy);
+}
+
+.btn-download {
+    background-color: transparent;
+    border: 1px solid var(--color-navy);
+    color: var(--color-navy);
+}

@@ -1,0 +1,109 @@
+@import './styles/animations.css';
+
+:root {
+  /* Color Palette */
+  --color-navy: #2D3E50;
+  --color-cream: #FEF5E7;
+  --color-cream-light: #FFFBF0;
+
+  --color-soft-pink: #F9C9D4;
+  --color-soft-pink-light: #FEC8D8;
+
+  --color-soft-blue: #D8E0EA;
+  --color-soft-blue-light: #DFE9F3;
+
+  --color-soft-teal: #A8D8E8;
+
+  --color-soft-yellow: #FFF4C7;
+
+  --color-soft-purple: #E9D5FF;
+
+  --color-soft-orange: #FED7AA;
+
+  --color-gray-text: #6B7280;
+  --color-gray-light: #9CA3AF;
+
+  --color-white: #FFFFFF;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+
+  /* Typography */
+  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* Spacing & Layout */
+  --sidebar-width: 240px;
+  --header-height: 80px;
+  /* Neo-Brutalism Design Tokens */
+  --neo-border: 2.5px solid var(--color-navy);
+  --neo-shadow: 4px 4px 0px var(--color-navy);
+  --neo-shadow-large: 6px 6px 0px var(--color-navy);
+  --neo-shadow-hover: 2px 2px 0px var(--color-navy);
+
+  --card-radius: 20px;
+  --card-shadow: var(--neo-shadow);
+  --card-shadow-hover: var(--neo-shadow-hover);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--color-cream);
+  color: var(--color-navy);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+ul {
+  list-style: none;
+}
+
+/* Utilities */
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.grid {
+  display: grid;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.h-full {
+  height: 100%;
+}

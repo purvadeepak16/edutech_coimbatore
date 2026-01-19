@@ -1,0 +1,78 @@
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.greeting-section,
+.study-plan-section,
+.learning-mode-section,
+.knowledge-graph-section,
+.active-session-section,
+.ai-doubt-section,
+.cms-section,
+.assessments-section,
+.load-balancing-section,
+.wellness-section,
+.gamification-section,
+.study-groups-section,
+.exam-countdown-section {
+    animation: fadeInUp 0.6s ease-out forwards;
+    opacity: 0;
+}
+
+/* Stagger Animations */
+.study-plan-section {
+    animation-delay: 0.1s;
+}
+
+.learning-mode-section {
+    animation-delay: 0.2s;
+}
+
+.knowledge-graph-section {
+    animation-delay: 0.3s;
+}
+
+.active-session-section {
+    animation-delay: 0.4s;
+}
+
+.ai-doubt-section {
+    animation-delay: 0.5s;
+}
+
+.cms-section {
+    animation-delay: 0.6s;
+}
+
+.assessments-section {
+    animation-delay: 0.7s;
+}
+
+.load-balancing-section {
+    animation-delay: 0.8s;
+}
+
+.wellness-section {
+    animation-delay: 0.9s;
+}
+
+.gamification-section {
+    animation-delay: 1.0s;
+}
+
+.study-groups-section {
+    animation-delay: 1.1s;
+}
+
+.exam-countdown-section {
+    animation-delay: 1.2s;
+}
