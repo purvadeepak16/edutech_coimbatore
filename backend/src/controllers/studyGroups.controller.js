@@ -153,6 +153,50 @@ export const getStudyGroup = async (req, res) => {
   }
 };
 
+export const getMessages = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?.id;
+    if (!id) return res.status(400).json({ success: false, message: 'Group id required' });
+
+    const groupRef = db.collection('studyGroups').doc(id);
+    const groupDoc = await groupRef.get();
+    if (!groupDoc.exists) return res.status(404).json({ success: false, message: 'Group not found' });
+    const group = groupDoc.data();
+
+    // Membership check for private groups
+    let isMember = false;
+    if (userId) {
+      try {
+        const m = await groupRef.collection('members').doc(userId).get();
+        isMember = m.exists || userId === group.organizerId;
+      } catch (e) {
+        console.warn('Membership check failed for messages:', e.message || e);
+        isMember = userId === group.organizerId;
+      }
+    }
+    if (group.visibility === 'private' && !isMember) return res.status(403).json({ success: false, message: 'Private group messages are only for members' });
+
+    // Fetch messages ordered ascending (older -> newer)
+    const snap = await groupRef.collection('messages').orderBy('createdAt', 'asc').limit(1000).get();
+    const messages = snap.docs.map((d) => {
+      const data = d.data();
+      let createdAt = data.createdAt;
+      if (createdAt && typeof createdAt.toDate === 'function') {
+        createdAt = createdAt.toDate().toISOString();
+      } else if (!createdAt) {
+        createdAt = new Date().toISOString();
+      }
+      return { id: d.id, text: data.text, senderUid: data.senderId || data.senderUid || null, senderName: data.senderName || null, createdAt };
+    });
+
+    res.json({ success: true, messages });
+  } catch (err) {
+    console.error('Get messages error:', err);
+    res.status(500).json({ success: false, message: 'Failed to fetch messages', error: err.message });
+  }
+};
+
 export const sendMessage = async (req, res) => {
   try {
     const { id } = req.params;

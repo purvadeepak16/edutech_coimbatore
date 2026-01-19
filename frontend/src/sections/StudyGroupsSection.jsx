@@ -3,6 +3,7 @@ import { Users, Plus, Compass, Video, Trash } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './StudyGroupsSection.css';
 import { useAuth } from '../context/AuthContext';
+import GroupChatPanel from '../components/GroupChatPanel';
 
 const API_BASE = 'http://localhost:5000/api/study-groups';
 
@@ -49,6 +50,8 @@ const StudyGroupsSection = () => {
     const [error, setError] = useState(null);
     const navigate = useNavigate();
     const { currentUser } = useAuth();
+    const [selectedGroupId, setSelectedGroupId] = useState(null);
+    const [isChatOpen, setIsChatOpen] = useState(false);
 
     /* ---------- FETCH GROUPS ---------- */
     useEffect(() => {
@@ -115,9 +118,11 @@ const StudyGroupsSection = () => {
         }
     };
 
-    /* ---------- VIEW GROUP ---------- */
+    /* ---------- VIEW GROUP (open chat panel) ---------- */
     const handleViewGroup = (groupId) => {
-        navigate(`/study-groups/${groupId}`);
+        // open right-side chat panel instead of navigating away
+        setSelectedGroupId(groupId);
+        setIsChatOpen(true);
     };
 
     /* ---------- DELETE GROUP ---------- */
@@ -182,25 +187,47 @@ const StudyGroupsSection = () => {
             {/* -------- CREATE MODAL -------- */}
             {showCreate && (
                 <div className="modal-backdrop">
-                    <div className="modal">
-                        <h3>Create Study Group</h3>
-                        <input
-                            placeholder="Group Name"
-                            value={form.name}
-                            onChange={e => setForm({ ...form, name: e.target.value })}
-                        />
-                        <textarea
-                            placeholder="Description"
-                            value={form.description}
-                            onChange={e => setForm({ ...form, description: e.target.value })}
-                        />
+                    <div className="modal-card">
+                        <div className="modal-header">
+                            <h3>Create Study Group</h3>
+                            <button className="modal-close" onClick={() => setShowCreate(false)}>✕</button>
+                        </div>
+
+                        <div className="modal-body">
+                            <label className="modal-label">Group Name</label>
+                            <input
+                                className="modal-input"
+                                placeholder="e.g., Exam Prep — Chemistry"
+                                value={form.name}
+                                onChange={e => setForm({ ...form, name: e.target.value })}
+                            />
+
+                            <label className="modal-label">Description</label>
+                            <textarea
+                                className="modal-textarea"
+                                placeholder="Short description (optional)"
+                                value={form.description}
+                                onChange={e => setForm({ ...form, description: e.target.value })}
+                            />
+                        </div>
+
                         <div className="modal-actions">
-                            <button onClick={handleCreateGroup}>Create</button>
-                            <button onClick={() => setShowCreate(false)}>Cancel</button>
+                            <div />
+                            <div className="modal-actions-right">
+                                <button className="btn-cancel" onClick={() => setShowCreate(false)}>Cancel</button>
+                                <button className="btn-create-primary" onClick={handleCreateGroup}>Create</button>
+                            </div>
                         </div>
                     </div>
                 </div>
             )}
+
+            {/* Chat panel (slides in from right) */}
+            <GroupChatPanel
+                groupId={isChatOpen ? selectedGroupId : null}
+                onClose={() => { setIsChatOpen(false); setSelectedGroupId(null); }}
+                authUser={currentUser}
+            />
         </section>
     );
 };

@@ -4,6 +4,7 @@ import {
   createStudyGroup,
   listStudyGroups,
   getStudyGroup,
+  getMessages,
   joinStudyGroup,
   sendMessage,
   approveRequest,
@@ -26,6 +27,7 @@ router.get("/:id", auth, getStudyGroup);
 router.post("/:id/join", auth, joinStudyGroup);
 
 // Chat
+router.get("/:id/messages", auth, getMessages);
 router.post("/:id/messages", auth, sendMessage);
 
 // Leave
