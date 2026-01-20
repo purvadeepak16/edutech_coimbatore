@@ -63,6 +63,14 @@ try {
   console.warn('Study groups routes not loaded:', err.message || err);
 }
 
+// Mount group meet routes
+try {
+  const groupMeetRoutes = (await import('./routes/groupMeet.routes.js')).default;
+  app.use('/api/group-meet', groupMeetRoutes);
+} catch (err) {
+  console.warn('Group meet routes not loaded:', err.message || err);
+}
+
 // Token verification endpoint (uses admin SDK)
 app.post('/api/auth/verify', async (req, res) => {
   if (!admin.apps.length) return res.status(500).json({ error: 'Firebase Admin not initialized on server' });

@@ -4,11 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import './StudyGroupsSection.css';
 import { useAuth } from '../context/AuthContext';
 import GroupChatPanel from '../components/GroupChatPanel';
+import GroupMeetPreview from '../components/GroupMeetPreview';
 
 const API_BASE = 'http://localhost:5000/api/study-groups';
 
 /* ------------------ GROUP CARD ------------------ */
-const GroupCard = ({ name, members, status, latestMsg, initials, color, accentColor, consistency, onView, onDelete }) => (
+const GroupCard = ({ id, name, organizerId, members, status, latestMsg, initials, color, accentColor, consistency, onView, onDelete, onMeet }) => (
     <div className="group-card" style={{ backgroundColor: color }}>
         <button className="delete-btn" onClick={(e) => { e.stopPropagation(); onDelete && onDelete(); }} title="Delete group">
             <Trash size={14} />
@@ -36,7 +37,7 @@ const GroupCard = ({ name, members, status, latestMsg, initials, color, accentCo
 
         <div className="group-actions">
             <button className="view-btn" onClick={onView}>View Group</button>
-            <button className="meet-btn"><Video size={14} /> Start Meet</button>
+            <button className="meet-btn" onClick={onMeet}><Video size={14} /> Start Meet</button>
         </div>
     </div>
 );
@@ -52,6 +53,9 @@ const StudyGroupsSection = () => {
     const { currentUser } = useAuth();
     const [selectedGroupId, setSelectedGroupId] = useState(null);
     const [isChatOpen, setIsChatOpen] = useState(false);
+    const [isMeetOpen, setIsMeetOpen] = useState(false);
+    const [activeMeeting, setActiveMeeting] = useState(null);
+    const [meetError, setMeetError] = useState(null);
 
     /* ---------- FETCH GROUPS ---------- */
     useEffect(() => {
@@ -125,6 +129,43 @@ const StudyGroupsSection = () => {
         setIsChatOpen(true);
     };
 
+    /* ---------- START / OPEN MEET ---------- */
+    const handleMeet = async (group) => {
+        setMeetError(null);
+        try {
+            if (!currentUser) throw new Error('Sign in to access meetings');
+            const token = await currentUser.getIdToken();
+            // If organizer, POST to create (idempotent)
+            let res;
+            if (currentUser.uid === group.organizerId) {
+                res = await fetch('http://localhost:5000/api/group-meet/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                    body: JSON.stringify({ groupId: group.id }),
+                });
+            } else {
+                // member: fetch existing meeting
+                res = await fetch(`http://localhost:5000/api/group-meet/${group.id}`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+            }
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data?.message || data?.error || 'Meeting not available');
+            const meeting = data.meeting || data;
+            if (!meeting) throw new Error('No meeting returned');
+            setActiveMeeting({ ...meeting, group });
+            setIsMeetOpen(true);
+        } catch (err) {
+            console.error('Meet error:', err);
+            setMeetError(err.message || String(err));
+            // If member and not started, show friendly message
+            if (err.message && err.message.toLowerCase().includes('no active')) {
+                alert('Meeting not started by organizer yet');
+            }
+        }
+    };
+
     /* ---------- DELETE GROUP ---------- */
     const handleDeleteGroup = async (groupId) => {
         if (!window.confirm('Delete this study group? This action cannot be undone.')) return;
@@ -169,7 +210,9 @@ const StudyGroupsSection = () => {
                     return (
                         <GroupCard
                             key={group.id}
-                            name={group.name}
+                                        id={group.id}
+                                        organizerId={group.organizerId}
+                                        name={group.name}
                             members={group.members ? group.members.length : (group.members?.length || 1)}
                             status={group.visibility === 'private' ? 'Private' : 'Active'}
                             latestMsg={group.description || 'No messages yet'}
@@ -177,8 +220,9 @@ const StudyGroupsSection = () => {
                             color={group.color || p.color}
                             accentColor={group.accentColor || p.accent}
                             consistency={group.consistency || 90}
-                            onView={() => handleViewGroup(group.id)}
-                            onDelete={() => handleDeleteGroup(group.id)}
+                                        onView={() => handleViewGroup(group.id)}
+                                        onDelete={() => handleDeleteGroup(group.id)}
+                                        onMeet={() => handleMeet(group)}
                         />
                     );
                 })}
@@ -228,6 +272,14 @@ const StudyGroupsSection = () => {
                 onClose={() => { setIsChatOpen(false); setSelectedGroupId(null); }}
                 authUser={currentUser}
             />
+            {/* Group Meet Preview */}
+            {isMeetOpen && activeMeeting && (
+                <React.Suspense fallback={null}>
+                    <div>
+                        <GroupMeetPreview meeting={activeMeeting} group={activeMeeting.group} onClose={() => { setIsMeetOpen(false); setActiveMeeting(null); }} currentUser={currentUser} />
+                    </div>
+                </React.Suspense>
+            )}
         </section>
     );
 };
