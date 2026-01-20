@@ -1,14 +1,10 @@
 import React from 'react';
-import SyllabusIngestionSection from '../sections/SyllabusIngestionSection';
+import SyllabusIngestion from '../components/SyllabusIngestion';
 
 const SyllabusPage = () => {
     return (
         <div className="syllabus-page">
-            <div className="page-header">
-                <h1>📚 Syllabus Ingestion</h1>
-                <p>Upload and organize your course materials</p>
-            </div>
-            <SyllabusIngestionSection />
+            <SyllabusIngestion />
         </div>
     );
 };

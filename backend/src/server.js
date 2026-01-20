@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import mindmapRoutes from './routes/mindmap.routes.js';
 import zombieRoutes from './routes/zombieRoutes.js';
 import openrouterRoutes from './routes/openrouter.routes.js';
+import syllabusRoutes from './routes/syllabus.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -45,6 +46,7 @@ app.use(express.json());
 app.use('/api/mindmap', mindmapRoutes);
 app.use('/api/zombie', zombieRoutes);
 app.use('/api/openrouter', openrouterRoutes);
+app.use('/api/syllabus', syllabusRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {
