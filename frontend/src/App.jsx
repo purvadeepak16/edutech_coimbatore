@@ -19,6 +19,8 @@ import ExamCountdownPage from './pages/ExamCountdownPage';
 import PeaceModePage from './pages/PeaceModePage';
 import GamificationPage from './pages/GamificationPage';
 import ZombieGame from './pages/games/ZombieGame';
+import MemoryCardGame from './pages/games/MemoryCardGame';
+import WhackAMoleGame from './pages/games/WhackAMoleGame';
 
 import './App.css';
 import './pages/PageStyles.css';
@@ -47,6 +49,8 @@ function AppContent() {
         <Route path="/parent-view" element={<ParentViewPage />} />
         <Route path="/gamification" element={<GamificationPage />} />
         <Route path="/zombie-survival" element={<ZombieGame />} />
+        <Route path="/memory-game" element={<MemoryCardGame />} />
+        <Route path="/whack-a-mole" element={<WhackAMoleGame />} />
         <Route path="/achievements" element={<AchievementsPage />} />
         <Route path="/groups" element={<StudyGroupsPage />} />
         <Route path="/exam-countdown" element={<ExamCountdownPage />} />

@@ -1,56 +1,15 @@
 import React from 'react';
-import { Gamepad2, Brain, Trophy, Zap, Star } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
+import { Star, Trophy } from 'lucide-react';
+import GamesGrid from '../components/GamesGrid';
 import './GamificationSection.css';
 
-const GameCard = ({ title, description, icon: Icon, color, difficulty, onClick }) => (
-    <div className="game-card" style={{ borderColor: `var(--color-${color})` }}>
-        <div className="game-card-header">
-            <div className="game-icon-box" style={{ backgroundColor: `var(--color-${color}-light)` }}>
-                <Icon size={32} color={`var(--color-${color})`} />
-            </div>
-            <div className="difficulty-tag">{difficulty}</div>
-        </div>
-        <div className="game-card-content">
-            <h3>{title}</h3>
-            <p>{description}</p>
-        </div>
-        <div className="game-card-footer">
-            <Button className="game-start-btn" onClick={onClick}>
-                <Gamepad2 size={18} />
-                <span>Start Game</span>
-            </Button>
-        </div>
-    </div>
-);
-
 const GamificationSection = () => {
-    const navigate = useNavigate();
-    const games = [
-        {
-            title: "Zombie Survival",
-            description: "A mindful decision-making game to sharpen your reflexes and focus. Can you survive the 14-day quarantine?",
-            icon: Brain,
-            color: "soft-pink",
-            difficulty: "Medium",
-            onClick: () => navigate('/zombie-survival')
-        },
-        {
-            title: "Quick Quiz",
-            description: "Battle against the AI in a rapid-fire trivia round based on your syllabus.",
-            icon: Zap,
-            color: "soft-teal",
-            difficulty: "Hard"
-        },
-        {
-            title: "Syllabus Sprint",
-            description: "A timed exploration of your notes. Find the key concepts before time runs out!",
-            icon: Trophy,
-            color: "soft-yellow",
-            difficulty: "Easy"
-        }
-    ];
+    // TODO: Replace with actual user progress from context/API
+    const userProgress = {
+        'zombie-survival': { unlocked: true, progress: null, completed: false },
+        'memory-card': { unlocked: true, progress: null, completed: false },
+        'whack-a-mole': { unlocked: true, progress: null, completed: false },
+    };
 
     return (
         <section className="gamification-container">
@@ -75,11 +34,7 @@ const GamificationSection = () => {
                 </div>
             </div>
 
-            <div className="games-grid">
-                {games.map((game, index) => (
-                    <GameCard key={index} {...game} />
-                ))}
-            </div>
+            <GamesGrid userProgress={userProgress} />
         </section>
     );
 };

@@ -11,6 +11,15 @@ router.post('/ask', async (req, res) => {
   const { prompt, model } = req.body;
   if (!prompt) return res.status(400).json({ error: 'Missing prompt in request body' });
 
+  // Mock mode for network issues
+  const useMock = process.env.USE_MOCK_AI === 'true';
+  if (useMock) {
+    return res.json({ 
+      answer: `Mock AI Response: I understand you're asking about "${prompt}". This is a test response since OpenRouter API is unreachable. The actual AI would provide a detailed, context-aware answer here.`,
+      mock: true 
+    });
+  }
+
   try {
     const body = {
       model: model || 'gpt-4o-mini',
@@ -52,7 +61,17 @@ router.post('/ask', async (req, res) => {
     return res.json({ answer: assistantText, raw: json });
   } catch (err) {
     console.error('OpenRouter proxy error:', err?.message || err);
-    return res.status(500).json({ error: 'OpenRouter request failed', details: err?.message });
+    
+    let errorMsg = 'OpenRouter request failed';
+    if (err.code === 'ENOTFOUND') {
+      errorMsg = 'Cannot reach OpenRouter API. Check your internet connection or firewall settings.';
+    } else if (err.code === 'ECONNREFUSED') {
+      errorMsg = 'Connection to OpenRouter API was refused.';
+    } else if (err.message) {
+      errorMsg = err.message;
+    }
+    
+    return res.status(500).json({ error: errorMsg, details: err?.message });
   }
 });
 
