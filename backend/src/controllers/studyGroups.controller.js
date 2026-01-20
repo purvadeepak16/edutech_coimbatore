@@ -146,7 +146,20 @@ export const getStudyGroup = async (req, res) => {
       members = membersSnap.docs.map((d) => d.data());
     }
 
-    res.json({ success: true, group: { id: doc.id, ...data }, isMember, members });
+    // Try to provide a memberCount for the frontend header (fall back to members array length)
+    let memberCount = undefined;
+    if (Array.isArray(data.members)) {
+      memberCount = data.members.length;
+    } else if (isMember) {
+      try {
+        const membersSnapAll = await db.collection("studyGroups").doc(id).collection("members").get();
+        memberCount = membersSnapAll.size;
+      } catch (mcErr) {
+        console.warn("Failed to count members subcollection:", mcErr.message || mcErr);
+      }
+    }
+
+    res.json({ success: true, group: { id: doc.id, ...data, memberCount }, isMember, members });
   } catch (err) {
     console.error("Get study group error:", err);
     res.status(500).json({ success: false, message: "Failed to fetch group", error: err.message });

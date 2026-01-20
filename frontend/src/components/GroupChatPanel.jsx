@@ -63,7 +63,13 @@ export default function GroupChatPanel({ groupId, onClose }) {
     // allow UI to settle
     const raf = requestAnimationFrame(() => {
       try {
-        el.scrollTop = el.scrollHeight;
+        // prefer smooth scroll into view of last child for reliability
+        const last = el.lastElementChild;
+        if (last && typeof last.scrollIntoView === 'function') {
+          last.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        } else {
+          el.scrollTop = el.scrollHeight;
+        }
       } catch (e) {
         // ignore
       }
