@@ -458,6 +458,13 @@ const VisualMindMap = ({ data, onNodeClick }) => {
             const totalTextHeight = (n.lineHeight || 18) * lines.length;
             const firstY = -totalTextHeight / 2 + (n.lineHeight || 18) / 2;
 
+            // Determine background and styling based on level without changing layout
+            const levelIdx = Math.max(0, Math.min(2, n.level)); // 0(root),1(level1),2(level2+)
+            const baseBg = COLORS[levelIdx % COLORS.length] || 'var(--color-soft-blue)';
+            // Slightly vary opacity by level: root most prominent
+            const fillOpacity = levelIdx === 0 ? 0.22 : levelIdx === 1 ? 0.16 : 0.12;
+            const strokeOpacity = levelIdx === 0 ? 0.12 : 0.08;
+
             return (
               <g
                 key={n.id}
@@ -466,6 +473,22 @@ const VisualMindMap = ({ data, onNodeClick }) => {
                 onClick={() => hasChildren && toggleNode(nd.id)}
                 style={{ cursor: hasChildren ? 'pointer' : 'default' }}
               >
+                {/* Rounded background box */}
+                <rect
+                  x={-(bgW / 2)}
+                  y={-(bgH / 2)}
+                  width={bgW}
+                  height={bgH}
+                  rx={Math.min(20, bgH / 2)}
+                  ry={Math.min(20, bgH / 2)}
+                  fill={baseBg}
+                  fillOpacity={fillOpacity}
+                  stroke="var(--color-navy)"
+                  strokeOpacity={strokeOpacity}
+                  strokeWidth={1}
+                  className="node-bg"
+                />
+
                 <text
                   x={0}
                   y={0}

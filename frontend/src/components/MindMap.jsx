@@ -563,6 +563,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { X, Trash2 } from "lucide-react";
 import "./MindMap.css";
 import { useStudyMap } from "../context/StudyMapContext";
+import MindNode from "./MindNode";
 
 const COLORS = ["#5B9BFF", "#A855F7", "#EC4899", "#F97316", "#10B981"];
 
@@ -657,15 +658,18 @@ const MindMap = ({ isOpen, onClose }) => {
               height={1200}
               style={{ position: "absolute", top: 0, left: 0, zIndex: 0, pointerEvents: "none" }}
             />
-            {nodes.map((n) => (
-              <div
-                key={n.id}
-                className="mind-node"
-                style={{ left: n.x, top: n.y, backgroundColor: n.color, zIndex: 1 }}
-              >
-                {n.text}
-              </div>
-            ))}
+            {nodes.map((n) => {
+              // determine level: root (center), level1 (direct child of center), level2 (child of level1)
+              let level = 'level2';
+              if (n.isCenter) level = 'root';
+              else if (nodes.find((x) => x.id === n.parentId && x.isCenter)) level = 'level1';
+
+              return (
+                <div key={n.id} style={{ left: n.x, top: n.y, zIndex: 1, position: 'absolute', transform: 'translate(-50%, -50%)' }}>
+                  <MindNode text={n.text} level={level} />
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
