@@ -3,13 +3,14 @@ import { db } from '../config/firebase';
 import { useAuth } from '../context/AuthContext';
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Headphones, BookOpen, FileText, ChevronRight, Clock } from 'lucide-react';
 import './StudyPlanSection.css';
 
 const API_BASE_URL = 'http://localhost:5000/api';
 
 /* ---------- Timeline Item ---------- */
-const TimelineItem = ({ time, icon: Icon, title, subtitle, duration, progress, status, color, isLast }) => (
+const TimelineItem = ({ time, icon: Icon, title, subtitle, duration, progress, status, color, isLast, onStart }) => (
     <div className="timeline-item">
         <div className="time-column">
             <span className="time-label">{time}</span>
@@ -46,7 +47,7 @@ const TimelineItem = ({ time, icon: Icon, title, subtitle, duration, progress, s
                     <span className="progress-text">{progress}% Completed</span>
                 )}
                 <div className="action-buttons">
-                    <button className="btn-start">Start</button>
+                    <button className="btn-start" onClick={onStart}>Start</button>
                     <button className="btn-secondary">Reschedule</button>
                 </div>
             </div>
@@ -62,6 +63,12 @@ const StudyPlanSection = () => {
     const [todaysTasks, setTodaysTasks] = useState([]);
     const [taskAudioList, setTaskAudioList] = useState([]);
     const [generatingTaskAudio, setGeneratingTaskAudio] = useState(false);
+    const navigate = useNavigate();
+
+    const handleStartReading = () => {
+        // Navigate to study-reader page and pass today's tasks via location state
+        navigate('/study-reader', { state: { todaysTasks } });
+    };
 
     /* ✅ Fetch today's tasks on component mount */
     useEffect(() => {
@@ -243,6 +250,7 @@ const StudyPlanSection = () => {
                     duration="1 hour"
                     progress={0}
                     color="var(--color-soft-blue-light)"
+                    onStart={() => handleStartReading()}
                 />
                 <TimelineItem
                     time="4:30 PM"

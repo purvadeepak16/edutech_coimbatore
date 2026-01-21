@@ -9,6 +9,7 @@ import SyllabusPage from './pages/SyllabusPage';
 import StudyGroupsPage from './pages/StudyGroupsPage';
 import MindMapPage from './pages/MindMapPage';
 import AskAIPage from './pages/AskAIPage';
+import StudyReaderPage from './pages/StudyReaderPage';
 import AssessmentsPage from './pages/AssessmentsPage';
 import MasteryScorePage from './pages/MasteryScorePage';
 import SchedulePage from './pages/SchedulePage';
@@ -47,6 +48,7 @@ function AppContent() {
         <Route path="/visual-map" element={<VisualMindMapPage />} />
         <Route path="/active-session" element={<DashboardPage />} />
         <Route path="/ask-ai" element={<AskAIPage />} />
+        <Route path="/study-reader" element={<StudyReaderPage />} />
         <Route path="/mastery-score" element={<MasteryScorePage />} />
         <Route path="/assessments" element={<AssessmentsPage />} />
         <Route path="/schedule" element={<SchedulePage />} />

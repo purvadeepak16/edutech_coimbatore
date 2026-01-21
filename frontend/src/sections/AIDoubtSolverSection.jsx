@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Lightbulb, Send, Clock, ThumbsUp, ArrowRight, Sparkles, CheckCircle, AlertCircle } from 'lucide-react';
 import aiRobotImg from '../assets/ai-robot.png';
 import './AIDoubtSolverSection.css';
@@ -164,11 +164,13 @@ const DoubtItem = ({ question, time, confidence, isLast }) => (
     </div>
 );
 
-const AIDoubtSolverSection = () => {
-    const [query, setQuery] = useState('');
+const AIDoubtSolverSection = ({ initialQuery = '' }) => {
+    const [query, setQuery] = useState(initialQuery || '');
     const [loading, setLoading] = useState(false);
     const [answer, setAnswer] = useState(null);
     const [error, setError] = useState(null);
+
+    const sentRef = useRef(false);
 
     const onSend = async () => {
         if (!query.trim()) return;
@@ -178,15 +180,34 @@ const AIDoubtSolverSection = () => {
         try {
             const { askOpenRouter } = await import('../services/aiApi');
             const res = await askOpenRouter(query);
-            const text = extractReadableText(res?.answer ?? res?.raw ?? res ?? null);
-            if (text) setAnswer(text);
-            else setError('No readable text found in AI response');
+            const candidate = res?.answer ?? res?.raw ?? res ?? null;
+            const text = extractReadableText(candidate);
+            if (text) {
+                setAnswer(text);
+            } else {
+                // Fall back: log raw response and show it to user for debugging
+                console.warn('AI returned an unreadable shape, raw response:', res);
+                setAnswer(JSON.stringify(res, null, 2));
+                setError('No readable text found in AI response — showing raw response');
+            }
         } catch (err) {
             setError(err?.message || 'Request failed');
         } finally {
             setLoading(false);
         }
     };
+
+    // Auto-send when an initialQuery is provided (only once)
+    useEffect(() => {
+        if (!initialQuery) return;
+        if (sentRef.current) return;
+        sentRef.current = true;
+        // small delay to ensure UI mounts (optional)
+        const t = setTimeout(() => {
+            onSend();
+        }, 120);
+        return () => clearTimeout(t);
+    }, [initialQuery]);
 
     const onKeyDown = (e) => {
         if (e.key === 'Enter') {
