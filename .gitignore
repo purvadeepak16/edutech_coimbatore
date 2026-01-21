@@ -32,3 +32,10 @@ dist-ssr
 serviceAccount.json
 .env
 .env.local
+# Python virtual environments
+tts_env/
+tts-env/
+venv/
+env/
+*.pyc
+__pycache__/
