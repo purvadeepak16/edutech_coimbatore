@@ -1,7 +1,11 @@
 import express from 'express';
 import fetch from 'node-fetch';
+import { generateConversation } from '../controllers/openrouter.controller.js';
 
 const router = express.Router();
+
+// POST /conversation - generate student-teacher conversation
+router.post('/conversation', generateConversation);
 
 // POST /ask - proxy a prompt to OpenRouter (server-side key required)
 router.post('/ask', async (req, res) => {
