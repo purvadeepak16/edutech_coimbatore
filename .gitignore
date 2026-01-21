@@ -39,3 +39,4 @@ venv/
 env/
 *.pyc
 __pycache__/
+backend/tts_service/generated_audio/*
