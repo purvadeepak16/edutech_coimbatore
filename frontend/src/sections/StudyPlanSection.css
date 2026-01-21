@@ -294,3 +294,116 @@
     font-weight: 600;
     color: var(--color-navy);
 }
+/* ===============================
+   TASK AUDIO SECTION
+================================ */
+
+.task-audio-section {
+    background-color: var(--color-soft-blue-light);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.task-audio-title {
+    font-size: 16px;
+    color: var(--color-navy);
+    font-weight: 600;
+    margin: 0;
+}
+
+.task-audio-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.task-audio-item {
+    background-color: var(--color-white);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.task-audio-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.task-audio-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.task-audio-info h4 {
+    font-size: 15px;
+    color: var(--color-navy);
+    font-weight: 600;
+    margin: 0;
+}
+
+.task-subject {
+    font-size: 12px;
+    color: var(--color-gray-text);
+    font-weight: 500;
+}
+
+.diff-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: capitalize;
+    width: fit-content;
+}
+
+.diff-easy {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: var(--color-success);
+}
+
+.diff-medium {
+    background-color: rgba(251, 191, 36, 0.15);
+    color: #f59e0b;
+}
+
+.diff-hard {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+}
+
+.task-audio-player {
+    width: 100%;
+    height: 40px;
+    border-radius: 8px;
+}
+
+.loading-spinner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.loading-spinner p {
+    font-size: 14px;
+    color: var(--color-gray-text);
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
