@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+
 import { ArrowRight, BookOpen, Star, Users } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import './LandingPage.css';
@@ -11,31 +12,64 @@ const LandingPage = () => {
     const [role, setRole] = useState('Student');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [gender, setGender] = useState('');
+    const [learningPreference, setLearningPreference] = useState('');
+   const [preferredTimeSlots, setPreferredTimeSlots] = useState('');
+
+
 
     const { login, signUp } = useAuth();
 
-    async function handleSubmit(e) {
-        e.preventDefault();
+async function handleSubmit(e) {
+    e.preventDefault();
 
-        if (!email || !password || (!isLogin && !username) || (!isLogin && !role)) {
-            return setError('Please fill in all fields');
-        }
+    const timeSlotsArray = preferredTimeSlots
+        .split(',')
+        .map(slot => slot.trim())
+        .filter(slot => slot.length > 0);
 
-        try {
-            setError('');
-            setLoading(true);
-            if (isLogin) {
-                await login(email, password);
-            } else {
-                await signUp(email, password, username, role);
-            }
-        } catch (err) {
-            console.error(err);
-            setError('Failed to ' + (isLogin ? 'sign in' : 'create an account') + ': ' + err.message);
-        } finally {
-            setLoading(false);
-        }
+    if (
+        !email ||
+        !password ||
+        (!isLogin && (
+            !username ||
+            !role ||
+            !gender ||
+            !learningPreference ||
+            timeSlotsArray.length === 0
+        ))
+    ) {
+        return setError('Please fill in all fields');
     }
+
+    try {
+        setError('');
+        setLoading(true);
+
+        if (isLogin) {
+            await login(email, password);
+        } else {
+            await signUp(
+                email,
+                password,
+                username,
+                role,
+                gender,
+                learningPreference,
+                timeSlotsArray
+            );
+        }
+    } catch (err) {
+        setError(
+            'Failed to ' +
+            (isLogin ? 'sign in' : 'create an account') +
+            ': ' + err.message
+        );
+    } finally {
+        setLoading(false);
+    }
+}
+
 
     return (
         <div className="landing-page">
@@ -117,6 +151,58 @@ const LandingPage = () => {
                                 </select>
                             </div>
                         )}
+                        {!isLogin && (
+    <div className="input-group">
+        <label>Gender</label>
+        <select
+            value={gender}
+            onChange={(e) => setGender(e.target.value)}
+            className="auth-select"
+            required
+        >
+            <option value="">Select gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+        </select>
+    </div>
+)}
+
+{!isLogin && (
+    <div className="input-group">
+        <label>How do you understand concepts?</label>
+        <select
+            value={learningPreference}
+            onChange={(e) => setLearningPreference(e.target.value)}
+            className="auth-select"
+            required
+        >
+            <option value="">Select preference</option>
+            <option value="Reading Notes">By reading notes</option>
+            <option value="Listening Podcasts">By listening to podcasts</option>
+            <option value="Visual Mind Maps">By looking at visual flow charts / mind maps</option>
+        </select>
+    </div>
+)}
+
+{!isLogin && (
+    <div className="input-group">
+        <label>Preferred Time Slots</label>
+        <input
+            type="text"
+            placeholder="e.g. 10:00 AM – 11:00 AM, 6:00 PM – 7:00 PM"
+            value={preferredTimeSlots}
+            onChange={(e) => setPreferredTimeSlots(e.target.value)}
+            required
+        />
+        <small style={{ color: '#777' }}>
+            Separate multiple time slots using commas
+        </small>
+    </div>
+)}
+
+
+
                         <div className="input-group">
                             <label>Email Address</label>
                             <input
