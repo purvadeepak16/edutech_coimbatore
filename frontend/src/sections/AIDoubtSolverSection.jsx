@@ -164,7 +164,7 @@ const DoubtItem = ({ question, time, confidence, isLast }) => (
     </div>
 );
 
-const AIDoubtSolverSection = ({ initialQuery = '' }) => {
+const AIDoubtSolverSection = ({ initialQuery = '', studyMode = false }) => {
     const [query, setQuery] = useState(initialQuery || '');
     const [loading, setLoading] = useState(false);
     const [answer, setAnswer] = useState(null);
@@ -218,36 +218,57 @@ const AIDoubtSolverSection = ({ initialQuery = '' }) => {
 
     return (
         <section className="ai-doubt-section">
-            {/* Animated Robot Mascot */}
-            <div className="ai-robot-mascot">
-                <img src={aiRobotImg} alt="AI Assistant" className="robot-image" />
-                <div className="robot-speech-bubble">
-                    <p>Ask me anything! 🤖</p>
+            {/* Animated Robot Mascot (hidden in studyMode) */}
+            {!studyMode && (
+                <div className="ai-robot-mascot">
+                    <img src={aiRobotImg} alt="AI Assistant" className="robot-image" />
+                    <div className="robot-speech-bubble">
+                        <p>Ask me anything! 🤖</p>
+                    </div>
                 </div>
-            </div>
+            )}
 
             <div className="doubt-card">
                 <div className="card-header">
-                    <div className="icon-wrapper">
-                        <Lightbulb size={24} color="var(--color-white)" fill="var(--color-white)" />
-                    </div>
-                    <h3>Ask AI Your Doubts</h3>
+                    {!studyMode ? (
+                        <>
+                            <div className="icon-wrapper">
+                                <Lightbulb size={24} color="var(--color-white)" fill="var(--color-white)" />
+                            </div>
+                            <h3>Ask AI Your Doubts</h3>
+                        </>
+                    ) : (
+                        <h3 style={{ fontWeight: 700 }}>📘 Study Notes</h3>
+                    )}
                 </div>
 
-                <div className="input-container">
-                    <input
-                        type="text"
-                        placeholder="What's confusing you?"
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        onKeyDown={onKeyDown}
-                    />
-                    <button className={`send-btn ${loading ? 'thinking' : ''}`} onClick={onSend} disabled={loading}>
-                        {loading ? 'Thinking...' : <Send size={18} />}
-                    </button>
-                </div>
+                {/* when studyMode is true we hide the input completely */}
+                {!studyMode && (
+                    <div className="input-container">
+                        <input
+                            type="text"
+                            placeholder="What's confusing you?"
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            onKeyDown={onKeyDown}
+                        />
+                        <button className={`send-btn ${loading ? 'thinking' : ''}`} onClick={onSend} disabled={loading}>
+                            {loading ? 'Thinking...' : <Send size={18} />}
+                        </button>
+                    </div>
+                )}
 
                 <div className="ai-response">
+                    {studyMode && loading && !answer && (
+                        <div className="study-loading">
+                            <div className="loading-text"><strong>Loading notes...</strong></div>
+                            <div className="line" style={{ width: '70%' }}></div>
+                            <div className="line" style={{ width: '90%' }}></div>
+                            <div className="line" style={{ width: '60%' }}></div>
+                            <div className="line" style={{ width: '80%' }}></div>
+                        </div>
+                    )}
+
                     {error && (
                         <div className="ai-error">
                             <AlertCircle size={20} />
@@ -285,31 +306,35 @@ const AIDoubtSolverSection = ({ initialQuery = '' }) => {
                     )}
                 </div>
 
-                <div className="recent-questions">
-                    <h4>Recent Questions:</h4>
-                    <div className="questions-list">
-                        <DoubtItem
-                            question="Why photosynthesis needs sun?"
-                            time="Answered 2h ago"
-                            confidence="12"
-                        />
-                        <DoubtItem
-                            question="Mitochondria structure?"
-                            time="Answered 5h ago"
-                            confidence="8"
-                        />
-                        <DoubtItem
-                            question="Cell membrane function?"
-                            time="Answered yesterday"
-                            confidence="15"
-                            isLast={true}
-                        />
-                    </div>
-                </div>
+                {!studyMode && (
+                    <>
+                        <div className="recent-questions">
+                            <h4>Recent Questions:</h4>
+                            <div className="questions-list">
+                                <DoubtItem
+                                    question="Why photosynthesis needs sun?"
+                                    time="Answered 2h ago"
+                                    confidence="12"
+                                />
+                                <DoubtItem
+                                    question="Mitochondria structure?"
+                                    time="Answered 5h ago"
+                                    confidence="8"
+                                />
+                                <DoubtItem
+                                    question="Cell membrane function?"
+                                    time="Answered yesterday"
+                                    confidence="15"
+                                    isLast={true}
+                                />
+                            </div>
+                        </div>
 
-                <button className="view-all-btn">
-                    View All Doubts <ArrowRight size={16} />
-                </button>
+                        <button className="view-all-btn">
+                            View All Doubts <ArrowRight size={16} />
+                        </button>
+                    </>
+                )}
             </div>
         </section>
     );

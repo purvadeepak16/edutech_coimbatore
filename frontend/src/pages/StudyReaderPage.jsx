@@ -27,7 +27,7 @@ export default function StudyReaderPage() {
         <h1>📖 Read & Master</h1>
         <p>AI-guided structured notes for today's study plan</p>
       </div>
-      <AIDoubtSolverSection initialQuery={initialQuery} />
+      <AIDoubtSolverSection initialQuery={initialQuery} studyMode={true} />
     </div>
   );
 }

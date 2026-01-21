@@ -258,6 +258,31 @@
     min-height: 50px;
 }
 
+/* Loading skeleton used in studyMode */
+.study-loading {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px 20px;
+}
+.study-loading .line {
+    height: 14px;
+    background: linear-gradient(90deg, #eef2f7 0%, #f7fafc 50%, #eef2f7 100%);
+    border-radius: 8px;
+    animation: shimmer 1.2s infinite linear;
+}
+
+.study-loading .loading-text {
+    font-size: 15px;
+    color: var(--color-navy);
+    font-weight: 700;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200px 0; }
+    100% { background-position: 200px 0; }
+}
+
 /* Error State */
 .ai-error {
     background: linear-gradient(135deg, #FFF5F5 0%, #FED7D7 100%);
