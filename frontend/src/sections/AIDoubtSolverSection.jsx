@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Lightbulb, Send, Clock, ThumbsUp, ArrowRight, Sparkles, CheckCircle, AlertCircle } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import aiRobotImg from '../assets/ai-robot.png';
 import './AIDoubtSolverSection.css';
 
@@ -164,31 +165,56 @@ const DoubtItem = ({ question, time, confidence, isLast }) => (
     </div>
 );
 
-const AIDoubtSolverSection = ({ initialQuery = '', studyMode = false }) => {
+const AIDoubtSolverSection = ({ initialQuery = '', studyMode = false, tasks = [] }) => {
+    const { currentUser } = useAuth();
     const [query, setQuery] = useState(initialQuery || '');
     const [loading, setLoading] = useState(false);
     const [answer, setAnswer] = useState(null);
     const [error, setError] = useState(null);
+    const [cachedFlag, setCachedFlag] = useState(false);
 
     const sentRef = useRef(false);
 
     const onSend = async () => {
-        if (!query.trim()) return;
+        if (!query.trim() && (!tasks || tasks.length === 0)) return;
         setLoading(true);
         setAnswer(null);
         setError(null);
+        setCachedFlag(false);
         try {
-            const { askOpenRouter } = await import('../services/aiApi');
-            const res = await askOpenRouter(query);
-            const candidate = res?.answer ?? res?.raw ?? res ?? null;
-            const text = extractReadableText(candidate);
-            if (text) {
-                setAnswer(text);
+            // If in study mode and tasks provided, call new cached endpoint
+            if (studyMode && tasks && tasks.length > 0 && currentUser) {
+                const token = await currentUser.getIdToken();
+                const { getStudyNotes } = await import('../services/aiApi');
+                const res = await getStudyNotes({
+                    tasks,
+                    prompt: query.trim() || null,
+                    date: new Date().toISOString().split('T')[0],
+                    token
+                });
+                const rawNotes = res?.notes ?? null;
+                // Extract readable text from the notes (might be wrapped in JSON)
+                const text = extractReadableText(rawNotes);
+                if (text) {
+                    setAnswer(text);
+                    setCachedFlag(res.cached || false);
+                } else {
+                    setAnswer('No notes returned');
+                    setError('No readable text found in response');
+                }
             } else {
-                // Fall back: log raw response and show it to user for debugging
-                console.warn('AI returned an unreadable shape, raw response:', res);
-                setAnswer(JSON.stringify(res, null, 2));
-                setError('No readable text found in AI response — showing raw response');
+                // Fallback to askOpenRouter for regular AI doubt mode
+                const { askOpenRouter } = await import('../services/aiApi');
+                const res = await askOpenRouter(query);
+                const candidate = res?.answer ?? res?.raw ?? res ?? null;
+                const text = extractReadableText(candidate);
+                if (text) {
+                    setAnswer(text);
+                } else {
+                    console.warn('AI returned an unreadable shape, raw response:', res);
+                    setAnswer(JSON.stringify(res, null, 2));
+                    setError('No readable text found in AI response — showing raw response');
+                }
             }
         } catch (err) {
             setError(err?.message || 'Request failed');
@@ -284,7 +310,7 @@ const AIDoubtSolverSection = ({ initialQuery = '', studyMode = false }) => {
                                 <h4>AI Answer</h4>
                                 <div className="answer-badge">
                                     <CheckCircle size={14} />
-                                    <span>Verified</span>
+                                    <span>{cachedFlag ? 'Cached' : 'Verified'}</span>
                                 </div>
                             </div>
                             <div className="ai-answer-content">

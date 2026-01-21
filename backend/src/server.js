@@ -9,6 +9,7 @@ import mindmapRoutes from './routes/mindmap.routes.js';
 import visualMindMapRoutes from './routes/visualMindMap.routes.js';
 import zombieRoutes from './routes/zombieRoutes.js';
 import openrouterRoutes from './routes/openrouter.routes.js';
+import studyNotesRoutes from './routes/studyNotes.routes.js';
 
 import syllabusRoutes from './routes/syllabus.js';
 
@@ -70,6 +71,7 @@ app.use('/api/mindmap', mindmapRoutes);
 app.use('/api/visual-mindmap', visualMindMapRoutes);
 app.use('/api/zombie', zombieRoutes);
 app.use('/api/openrouter', openrouterRoutes);
+app.use('/api/study-notes', studyNotesRoutes);
 
 app.use('/api/syllabus', syllabusRoutes);
 
