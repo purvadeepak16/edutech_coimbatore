@@ -96,7 +96,8 @@ const StudyPlanSection = () => {
                                 subject,
                                 title: topic.title,
                                 difficulty: topic.difficulty,
-                                id: topic.id
+                                id: topic.id,
+                                date: today  // Add date for caching
                             });
                         });
                     }
@@ -112,54 +113,25 @@ const StudyPlanSection = () => {
                     try {
                         const taskText = `${task.subject}: ${task.title}`;
                         
-                        // Save note to Firestore
-                        const userEntriesRef = collection(
-                            db,
-                            "notes",
-                            "audioNotes",
-                            "users",
-                            currentUser.uid,
-                            "entries"
-                        );
-
-                        const docRef = await addDoc(userEntriesRef, {
-                            text: taskText,
-                            type: "daily-task-audio",
-                            taskId: task.id,
-                            status: "generating-conversation",
-                            createdAt: serverTimestamp()
-                        });
-
-                        // Generate conversation
-                        const conversationRes = await fetch(`${API_BASE_URL}/openrouter/conversation`, {
+                        // Use structured-notes endpoint with caching
+                        const ttsRes = await fetch(`${API_BASE_URL}/tts/structured-notes`, {
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/json",
                                 "Authorization": `Bearer ${token}`
                             },
                             body: JSON.stringify({
-                                noteId: docRef.id,
-                                noteText: taskText
+                                topic: taskText,
+                                userId: currentUser.uid,
+                                date: task.date,
+                                useCache: true
                             })
                         });
 
-                        if (!conversationRes.ok) continue;
-
-                        const conversationData = await conversationRes.json();
-
-                        // Generate TTS
-                        const ttsRes = await fetch(`${API_BASE_URL}/tts/conversation`, {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "Authorization": `Bearer ${token}`
-                            },
-                            body: JSON.stringify({
-                                noteId: docRef.id
-                            })
-                        });
-
-                        if (!ttsRes.ok) continue;
+                        if (!ttsRes.ok) {
+                            console.error(`TTS failed for ${task.title}`);
+                            continue;
+                        }
 
                         const ttsData = await ttsRes.json();
                         
@@ -167,7 +139,8 @@ const StudyPlanSection = () => {
                             taskTitle: task.title,
                             subject: task.subject,
                             audioUrl: ttsData.audioUrl,
-                            difficulty: task.difficulty
+                            difficulty: task.difficulty,
+                            cached: ttsData.cached || false
                         });
 
                     } catch (error) {

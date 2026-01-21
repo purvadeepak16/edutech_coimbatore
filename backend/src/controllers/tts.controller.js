@@ -259,7 +259,7 @@ export async function generateTTSFromConversation(req, res) {
  */
 export async function generateStructuredNotesTTS(req, res) {
   try {
-    const { topic, subtopic } = req.body;
+    const { topic, subtopic, userId, date, useCache = true } = req.body;
 
     if (!topic && !subtopic) {
       return res.status(400).json({ error: 'topic or subtopic is required' });
@@ -271,6 +271,34 @@ export async function generateStructuredNotesTTS(req, res) {
 
     const enrichmentTopic = subtopic || topic;
     console.log(`📚 Generating structured notes for: ${enrichmentTopic}`);
+
+    // Optional: cache by user/day/topic to avoid regenerating the same audio
+    let cacheRef = null;
+    if (userId && date && useCache) {
+      const slug = slugifyForId(enrichmentTopic);
+      cacheRef = admin
+        .firestore()
+        .collection('dailyTaskAudio')
+        .doc(userId)
+        .collection('tasks')
+        .doc(`${date}_${slug}`);
+
+      const cachedDoc = await cacheRef.get();
+      if (cachedDoc.exists) {
+        const cached = cachedDoc.data();
+        console.log(`♻️  Returning cached audio for ${enrichmentTopic} on ${date}`);
+        return res.json({
+          success: true,
+          cached: true,
+          audioUrl: cached.audioUrl,
+          filename: cached.filename,
+          topic: enrichmentTopic,
+          structuredContent: cached.structuredContent,
+          dialogueSegments: cached.dialogue?.length || 0,
+          dialogue: cached.dialogue || []
+        });
+      }
+    }
 
     // Step 1: Call OpenRouter with structured format request
     const structuredPrompt = `Create comprehensive educational notes on "${enrichmentTopic}" with the following exact structure:
@@ -360,6 +388,20 @@ Make each section comprehensive (30-100 words per section) and suitable for educ
     }
 
     const ttsData = await ttsResponse.json();
+
+    // Save to cache for the day if requested
+    if (cacheRef) {
+      await cacheRef.set({
+        topic: enrichmentTopic,
+        date,
+        audioUrl: ttsData.url,
+        filename: ttsData.filename,
+        structuredContent,
+        dialogue,
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      });
+      console.log(`💾 Cached audio for ${enrichmentTopic} on ${date}`);
+    }
 
     return res.json({
       success: true,
@@ -604,4 +646,13 @@ export async function generateTTSFromText(req, res) {
       details: err.message 
     });
   }
+}
+
+// Simple slugify for Firestore doc IDs
+function slugifyForId(text) {
+  return (text || 'topic')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 50) || 'topic';
 }
