@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useLocation } from 'react-router-dom';
 import { Network, AlertCircle, Lock, CheckCircle2 } from "lucide-react";
 import MindMap from "../components/MindMap";
 // VisualMindMap will be loaded on its own page
@@ -39,6 +40,7 @@ const TreeNode = ({ title, status, progress, children }) => {
 
 /* ---------- MAIN ---------- */
 const KnowledgeGraphSection = () => {
+  const location = useLocation();
   const [isMindMapOpen, setIsMindMapOpen] = useState(false);
   const [loadingVisual, setLoadingVisual] = useState(false);
 
@@ -164,6 +166,33 @@ const KnowledgeGraphSection = () => {
       setLoading(false);
     }
   };
+
+  // If navigated here with todaysTasks and autoGenerate flag, prefill and generate
+  useEffect(() => {
+    try {
+      const state = location?.state;
+      if (!state) return;
+      const { todaysTasks, autoGenerate } = state;
+      if (!todaysTasks || !autoGenerate) return;
+
+      // Build a topic string from today's tasks (concise)
+      const titleLines = todaysTasks.map((t, i) => {
+        const subj = t.subject || t.unitName || 'Unknown Subject';
+        const tt = t.title || t.originalTitle || t.name || '';
+        return `${i + 1}. ${subj}: ${tt}`;
+      });
+      const combined = `Today's Study Plan:\n${titleLines.join('\n')}\n\nGenerate a learning map and a visual mind map.`;
+
+      // Prefill topic and auto-generate
+      setTopic(combined);
+      // small delay to let state settle
+      setTimeout(() => {
+        generateMindMapFromAI();
+      }, 120);
+    } catch (err) {
+      console.error('Auto-generate mindmap failed', err);
+    }
+  }, [location]);
 
   const checkBackendHealth = async () => {
     try {

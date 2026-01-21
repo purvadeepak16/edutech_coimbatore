@@ -11,6 +11,7 @@ import MindMapPage from './pages/MindMapPage';
 import AskAIPage from './pages/AskAIPage';
 import StudyReaderPage from './pages/StudyReaderPage';
 import AssessmentsPage from './pages/AssessmentsPage';
+import AssessmentTestPage from './pages/AssessmentTestPage';
 import MasteryScorePage from './pages/MasteryScorePage';
 import SchedulePage from './pages/SchedulePage';
 import ParentViewPage from './pages/ParentViewPage';
@@ -51,6 +52,7 @@ function AppContent() {
         <Route path="/study-reader" element={<StudyReaderPage />} />
         <Route path="/mastery-score" element={<MasteryScorePage />} />
         <Route path="/assessments" element={<AssessmentsPage />} />
+        <Route path="/assessment-test" element={<AssessmentTestPage />} />
         <Route path="/schedule" element={<SchedulePage />} />
         <Route path="/text-to-speech" element={<TextToSpeechPage />} />
         <Route path="/text-to-podcast" element={<TextToPodcastPage />} />

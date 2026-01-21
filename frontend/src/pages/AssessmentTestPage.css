@@ -1,0 +1,9 @@
+.assessment-test-page { padding: 20px; font-family: Inter, Arial, sans-serif; }
+.header { display:flex; align-items:center; gap:12px; margin-bottom:16px; }
+.control-btn { background: none; border: 1px solid var(--color-gray-light, #ddd); padding:6px 10px; border-radius:6px; cursor:pointer; }
+.question-area { background: #fff; border: 1px solid #eee; padding: 18px; border-radius:8px; max-width:900px; }
+.q-count { font-size:14px; color:#666; margin-bottom:8px; }
+.q-text { font-size:18px; margin:12px 0 18px 0; }
+.options { display:flex; flex-direction:column; gap:10px; }
+.option-btn { padding:10px 12px; border-radius:8px; border:1px solid #ddd; background:#fafafa; cursor:pointer; text-align:left; }
+.option-btn:hover { background:#f0f8ff; }

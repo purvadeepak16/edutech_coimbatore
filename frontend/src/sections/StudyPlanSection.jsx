@@ -70,6 +70,18 @@ const StudyPlanSection = () => {
         navigate('/study-reader', { state: { todaysTasks } });
     };
 
+    const handleStartMindmap = () => {
+        // Navigate directly to the visual mind map page and pass today's tasks as a combined topic
+        if (!todaysTasks || todaysTasks.length === 0) {
+            // fallback to mindmap page when there are no tasks
+            navigate('/mindmap', { state: { todaysTasks, autoGenerate: true } });
+            return;
+        }
+
+        const combinedTopic = todaysTasks.map(t => `${t.subject}: ${t.title}`).join('\n');
+        navigate(`/visual-map?topic=${encodeURIComponent(combinedTopic)}`);
+    };
+
     /* ✅ Fetch today's tasks on component mount */
     useEffect(() => {
         if (currentUser) {
@@ -226,6 +238,16 @@ const StudyPlanSection = () => {
                     onStart={() => handleStartReading()}
                 />
                 <TimelineItem
+                    time="3:50 PM"
+                    icon={Headphones}
+                    title="Study with Mindmap"
+                    subtitle="Generate learning & visual maps"
+                    duration="40 min"
+                    progress={0}
+                    color="var(--color-soft-cream)"
+                    onStart={() => handleStartMindmap()}
+                />
+                <TimelineItem
                     time="4:30 PM"
                     icon={FileText}
                     title="Assessment"
@@ -234,6 +256,7 @@ const StudyPlanSection = () => {
                     status="Pending"
                     color="var(--color-cream)"
                     isLast
+                    onStart={() => navigate('/assessments', { state: { todaysTasks } })}
                 />
             </div>
 
