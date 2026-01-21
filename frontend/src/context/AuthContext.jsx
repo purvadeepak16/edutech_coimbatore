@@ -20,7 +20,13 @@ export function AuthProvider({ children }) {
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    async function signUp(email, password, username, role) {
+    async function signUp(email,
+    password,
+    username,
+    role,
+    gender,
+    learningPreference,
+    preferredTimeSlots) {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
@@ -31,10 +37,13 @@ export function AuthProvider({ children }) {
         // Save additional user info to Firestore
         await setDoc(doc(db, "users", user.uid), {
             userId: user.uid,
-            userName: username,
-            userRole: role,
-            email: email,
-            createdAt: serverTimestamp()
+    userName: username,
+    userRole: role,
+    email: email,
+    gender: gender,
+    learningPreference: learningPreference,
+    preferredTimeSlots: preferredTimeSlots,
+    createdAt: serverTimestamp()
         });
 
         return userCredential;
