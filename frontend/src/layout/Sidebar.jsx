@@ -9,6 +9,7 @@ import {
     LogOut,
     Flame,
     Calendar,
+    Mic,
     Brain,
     Network,
     Sparkles,
@@ -108,6 +109,18 @@ const Sidebar = () => {
                         <Link to="/schedule">
                             <Calendar size={20} />
                             <span>Schedule</span>
+                        </Link>
+                    </li>
+                    <li className={isActive('/text-to-speech') ? 'active' : ''}>
+                        <Link to="/text-to-speech">
+                            <Mic size={20} />
+                            <span>Text To Speech</span>
+                        </Link>
+                    </li>
+                    <li className={isActive('/text-to-podcast') ? 'active' : ''}>
+                        <Link to="/text-to-podcast">
+                            <Mic size={20} />
+                            <span>Text To Podcast</span>
                         </Link>
                     </li>
                     <li className={isActive('/parent-view') ? 'active' : ''}>

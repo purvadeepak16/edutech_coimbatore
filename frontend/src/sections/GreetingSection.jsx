@@ -1,6 +1,7 @@
 import React from 'react';
 import { Flame, TrendingUp, Clock, Brain } from 'lucide-react';
 import './GreetingSection.css';
+import { useAuth } from '../context/AuthContext';
 
 const StatCard = ({ icon: Icon, image, value, label, color, accentColor, blobColor }) => (
     <div className="stat-card">
@@ -20,10 +21,14 @@ const StatCard = ({ icon: Icon, image, value, label, color, accentColor, blobCol
 );
 
 const GreetingSection = () => {
+    const { currentUser } = useAuth();
+    const rawName = currentUser?.displayName || (currentUser?.email ? currentUser.email.split('@')[0] : 'there');
+    const name = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+
     return (
         <section className="greeting-section">
             <div className="greeting-header">
-                <h1>Hey Monark! 👋</h1>
+                <h1>Hey {name}! 👋</h1>
                 <p>"Let's have a great study session"</p>
             </div>
 

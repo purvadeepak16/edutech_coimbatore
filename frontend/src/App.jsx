@@ -13,6 +13,8 @@ import AssessmentsPage from './pages/AssessmentsPage';
 import MasteryScorePage from './pages/MasteryScorePage';
 import SchedulePage from './pages/SchedulePage';
 import ParentViewPage from './pages/ParentViewPage';
+import TextToSpeechPage from './pages/TextToSpeechPage';
+import TextToPodcastPage from './pages/TextToPodcastPage';
 import WellnessPage from './pages/WellnessPage';
 import AchievementsPage from './pages/AchievementsPage';
 import ExamCountdownPage from './pages/ExamCountdownPage';
@@ -48,6 +50,8 @@ function AppContent() {
         <Route path="/mastery-score" element={<MasteryScorePage />} />
         <Route path="/assessments" element={<AssessmentsPage />} />
         <Route path="/schedule" element={<SchedulePage />} />
+        <Route path="/text-to-speech" element={<TextToSpeechPage />} />
+        <Route path="/text-to-podcast" element={<TextToPodcastPage />} />
         <Route path="/parent-view" element={<ParentViewPage />} />
         <Route path="/gamification" element={<GamificationPage />} />
         <Route path="/zombie-survival" element={<ZombieGame />} />

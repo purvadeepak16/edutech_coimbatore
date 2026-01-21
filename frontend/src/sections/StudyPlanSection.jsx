@@ -58,10 +58,7 @@ const TimelineItem = ({ time, icon: Icon, title, subtitle, duration, progress, s
 const StudyPlanSection = () => {
 
     /* ✅ STATE MUST BE INSIDE COMPONENT */
-    const [noteText, setNoteText] = useState('');
-    const [audioList, setAudioList] = useState([]);
     const { currentUser } = useAuth();
-    const [audioUrl, setAudioUrl] = useState(null);
     const [todaysTasks, setTodaysTasks] = useState([]);
     const [taskAudioList, setTaskAudioList] = useState([]);
     const [generatingTaskAudio, setGeneratingTaskAudio] = useState(false);
@@ -180,87 +177,7 @@ const StudyPlanSection = () => {
         }
     };
 
-    /* ✅ HANDLER MUST BE INSIDE COMPONENT */
-const handleGenerateAudio = async () => {
-  if (!noteText.trim()) return;
-
-  if (!currentUser) {
-    alert("Please login to save notes");
-    return;
-  }
-
-  try {
-    // 1️⃣ Save note to Firestore
-    const userEntriesRef = collection(
-      db,
-      "notes",
-      "audioNotes",
-      "users",
-      currentUser.uid,
-      "entries"
-    );
-
-    const docRef = await addDoc(userEntriesRef, {
-      text: noteText,
-      type: "text-to-audio",
-      status: "generating-conversation",
-      createdAt: serverTimestamp()
-    });
-
-    const token = await currentUser.getIdToken();
-
-    // 2️⃣ Generate conversation with OpenRouter
-    console.log("📝 Generating conversation...");
-    const conversationRes = await fetch("http://localhost:5000/api/openrouter/conversation", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        noteId: docRef.id,
-        noteText
-      })
-    });
-
-    if (!conversationRes.ok) {
-      const error = await conversationRes.json();
-      throw new Error(`Conversation generation failed: ${error.error}`);
-    }
-
-    const conversationData = await conversationRes.json();
-    console.log("✅ Conversation generated:", conversationData);
-
-    // 3️⃣ Generate TTS from conversation using backend endpoint
-    console.log("🎤 Generating audio from conversation...");
-    const ttsRes = await fetch("http://localhost:5000/api/tts/conversation", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        noteId: docRef.id
-      })
-    });
-
-    if (!ttsRes.ok) {
-      const error = await ttsRes.json();
-      throw new Error(`TTS generation failed: ${error.error}`);
-    }
-
-    const ttsData = await ttsRes.json();
-    console.log("✅ Audio generated:", ttsData);
-    
-    setAudioUrl(ttsData.audioUrl);
-    setNoteText("");
-    alert("✅ Audio generated successfully! Playing now...");
-
-  } catch (error) {
-    console.error("❌ Generation failed:", error);
-    alert(`Error: ${error.message}`);
-  }
-};
+        /* Text-to-audio was moved to a dedicated page */
 
 
 
@@ -281,37 +198,7 @@ const handleGenerateAudio = async () => {
                 </div>
             </div>
 
-            {/* TEXT TO AUDIO FEATURE (BELOW HEADER) */}
-            <div className="text-to-audio-card">
-                <div className="text-to-audio-header">
-                    <h3>🎧 Text to Audio Learning</h3>
-                    <span className="text-to-audio-subtitle">
-                        Paste your notes and listen anytime
-                    </span>
-                </div>
-
-                <textarea
-                    className="text-to-audio-input"
-                    placeholder="Paste your study notes here..."
-                    value={noteText}
-                    onChange={(e) => setNoteText(e.target.value)}
-                />
-
-                <div className="text-to-audio-actions">
-                    <button className="btn-start" onClick={handleGenerateAudio}>
-                        Generate Audio
-                    </button>
-                </div>
-                {/* 🔊 Actual generated TTS audio */}
-{audioUrl && (
-  <div className="generated-audio-item">
-    <p>🎧 Generated Audio</p>
-    <audio controls src={audioUrl} />
-  </div>
-)}
-
-
-            </div>
+            {/* Text-to-audio moved to its own page: /text-to-speech */}
 
             {/* 🎧 AUTO-GENERATED TASK AUDIO SECTION */}
             {generatingTaskAudio && (
