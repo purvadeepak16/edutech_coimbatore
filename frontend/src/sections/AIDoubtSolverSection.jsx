@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Lightbulb, Send, Clock, ThumbsUp, ArrowRight } from 'lucide-react';
+import { Lightbulb, Send, Clock, ThumbsUp, ArrowRight, Sparkles, CheckCircle, AlertCircle } from 'lucide-react';
 import aiRobotImg from '../assets/ai-robot.png';
 import './AIDoubtSolverSection.css';
 
@@ -82,6 +82,72 @@ const extractReadableText = (raw) => {
     // Join collected pieces, preserve paragraphs and line breaks
     return collect.join('\n\n');
 };
+
+// Format text with markdown-style rendering
+const formatAnswer = (text) => {
+    if (!text) return null;
+    
+    // Split by double newlines for paragraphs
+    const paragraphs = text.split(/\n\n+/);
+    
+    return paragraphs.map((para, idx) => {
+        let trimmed = para.trim();
+        
+        // Check if it's a heading (###, ##, #)
+        if (/^#{1,6}\s/.test(trimmed)) {
+            const level = trimmed.match(/^(#{1,6})/)[1].length;
+            const headingText = trimmed.replace(/^#{1,6}\s+/, '');
+            const cleanText = headingText.replace(/\*\*/g, '');
+            
+            if (level <= 2) {
+                return <h3 key={idx} className="answer-heading">{cleanText}</h3>;
+            } else {
+                return <h4 key={idx} className="answer-subheading">{cleanText}</h4>;
+            }
+        }
+        
+        // Check if it's a numbered list (convert to bullet list)
+        if (/^\d+[\.\)]\s/.test(trimmed)) {
+            const items = para.split(/\n(?=\d+[\.\)])/);
+            return (
+                <ul key={idx} className="answer-list">
+                    {items.map((item, i) => {
+                        let cleanItem = item.replace(/^\d+[\.\)]\s*/, '');
+                        cleanItem = cleanItem.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+                        return <li key={i} dangerouslySetInnerHTML={{ __html: cleanItem }} />;
+                    })}
+                </ul>
+            );
+        }
+        
+        // Check if it's a bulleted list (-, *, •, or ++)
+        if (/^[\*\-•+]{1,2}\s/.test(trimmed)) {
+            const items = para.split(/\n(?=[\*\-•+]{1,2}\s)/);
+            return (
+                <ul key={idx} className="answer-list">
+                    {items.map((item, i) => {
+                        let cleanItem = item.replace(/^[\*\-•+]{1,2}\s*/, '');
+                        cleanItem = cleanItem.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+                        return <li key={i} dangerouslySetInnerHTML={{ __html: cleanItem }} />;
+                    })}
+                </ul>
+            );
+        }
+        
+        // Regular paragraph - clean up markdown symbols and apply formatting
+        let formatted = para;
+        // Remove leading symbols like -, *, ###
+        formatted = formatted.replace(/^[\*\-•+#\s]+/, '');
+        // Convert bold markdown to HTML
+        formatted = formatted.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        // Remove any remaining single asterisks or markdown symbols
+        formatted = formatted.replace(/\*/g, '');
+        
+        return (
+            <p key={idx} className="answer-paragraph" dangerouslySetInnerHTML={{ __html: formatted }} />
+        );
+    });
+};
 const DoubtItem = ({ question, time, confidence, isLast }) => (
     <div className={`doubt-item ${isLast ? 'last' : ''}`}>
         <div className="doubt-content">
@@ -155,17 +221,45 @@ const AIDoubtSolverSection = () => {
                         onChange={(e) => setQuery(e.target.value)}
                         onKeyDown={onKeyDown}
                     />
-                    <button className="send-btn" onClick={onSend} disabled={loading}>
+                    <button className={`send-btn ${loading ? 'thinking' : ''}`} onClick={onSend} disabled={loading}>
                         {loading ? 'Thinking...' : <Send size={18} />}
                     </button>
                 </div>
 
                 <div className="ai-response">
-                    {error && <div className="ai-error">Error: {error}</div>}
+                    {error && (
+                        <div className="ai-error">
+                            <AlertCircle size={20} />
+                            <span>Oops! {error}</span>
+                        </div>
+                    )}
                     {answer && (
                         <div className="ai-answer">
-                            <h4>AI Answer</h4>
-                            <div className="ai-answer-text" style={{ whiteSpace: 'pre-wrap' }}>{answer}</div>
+                            <div className="answer-header">
+                                <div className="answer-icon">
+                                    <Sparkles size={20} color="var(--color-white)" />
+                                </div>
+                                <h4>AI Answer</h4>
+                                <div className="answer-badge">
+                                    <CheckCircle size={14} />
+                                    <span>Verified</span>
+                                </div>
+                            </div>
+                            <div className="ai-answer-content">
+                                {formatAnswer(answer)}
+                            </div>
+                            <div className="answer-footer">
+                                <div className="answer-meta">
+                                    <span className="answer-time">Just now</span>
+                                    <span className="answer-separator">•</span>
+                                    <span className="answer-model">AI Powered</span>
+                                </div>
+                                <div className="answer-actions">
+                                    <button className="action-btn" title="Helpful">
+                                        <ThumbsUp size={16} />
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     )}
                 </div>
