@@ -19,6 +19,64 @@ function validateApiKey() {
   if (!OPENROUTER_API_KEY || OPENROUTER_API_KEY === 'your_key_here') {
     throw new Error('OpenRouter API key not configured. Please set OPENROUTER_API_KEY in your .env file.');
   }
+
+// Robust JSON extraction from AI responses. Tries code blocks first, then finds
+// the first JSON object/array by bracket matching. Returns parsed JSON or throws.
+function extractJsonFromResponse(content) {
+  if (!content || typeof content !== 'string') {
+    throw new Error('AI response empty or not text');
+  }
+
+  // Try fenced code block with optional 'json' marker
+  const codeMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  if (codeMatch && codeMatch[1]) {
+    try { return JSON.parse(codeMatch[1]); } catch (e) {
+      throw new Error('Failed to parse JSON from fenced code block: ' + e.message);
+    }
+  }
+
+  // Find first JSON-like char
+  const startIdx = content.search(/[\{\[]/);
+  if (startIdx === -1) {
+    throw new Error('No JSON object or array found in AI response');
+  }
+
+  const openChar = content[startIdx];
+  const closeChar = openChar === '{' ? '}' : ']';
+
+  // Bracket matching to find the corresponding closing bracket
+  let depth = 0;
+  let endIdx = -1;
+  for (let i = startIdx; i < content.length; i++) {
+    const ch = content[i];
+    if (ch === openChar) depth++;
+    else if (ch === closeChar) {
+      depth--;
+      if (depth === 0) { endIdx = i; break; }
+    }
+  }
+
+  if (endIdx === -1) {
+    // As a last resort, try to extract between first '[' and last ']' or '{' and last '}'
+    const lastIdx = content.lastIndexOf(closeChar);
+    if (lastIdx > startIdx) {
+      const fallback = content.slice(startIdx, lastIdx + 1);
+      try { return JSON.parse(fallback); } catch (e) {
+        throw new Error('Failed to parse JSON from AI response fallback: ' + e.message);
+      }
+    }
+    throw new Error('Could not locate matching closing bracket for JSON in AI response');
+  }
+
+  const jsonText = content.slice(startIdx, endIdx + 1);
+  try {
+    return JSON.parse(jsonText);
+  } catch (e) {
+    // Provide a short snippet to aid debugging
+    const snippet = jsonText.length > 200 ? jsonText.slice(0, 200) + '...' : jsonText;
+    throw new Error(`Failed to parse JSON from AI response: ${e.message}. Snippet: ${snippet}`);
+  }
+}
 }
 
 /**
@@ -90,21 +148,13 @@ Extract syllabus structure as JSON:`;
     );
 
     const content = response.data.choices[0].message.content;
-    
-    // Extract JSON from response (handle markdown code blocks)
-    let jsonText = content;
-    const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
-    if (jsonMatch) {
-      jsonText = jsonMatch[1];
-    }
-    
-    const extracted = JSON.parse(jsonText);
-    
+    const extracted = extractJsonFromResponse(content);
+
     // Validate structure
     if (!Array.isArray(extracted)) {
       throw new Error('AI response must be an array of units');
     }
-    
+
     return extracted;
   } catch (error) {
     if (error.response) {
@@ -170,15 +220,7 @@ Propose a comprehensive syllabus structure:`;
     );
 
     const content = response.data.choices[0].message.content;
-    
-    // Extract JSON
-    let jsonText = content;
-    const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
-    if (jsonMatch) {
-      jsonText = jsonMatch[1];
-    }
-    
-    return JSON.parse(jsonText);
+    return extractJsonFromResponse(content);
   } catch (error) {
     if (error.response) {
       throw new Error(`AI proposal failed: ${error.response.data.error?.message || error.message}`);
@@ -271,15 +313,7 @@ Generate a comprehensive study plan with important points highlighted:`;
     );
 
     const content = response.data.choices[0].message.content;
-    
-    // Extract JSON
-    let jsonText = content;
-    const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
-    if (jsonMatch) {
-      jsonText = jsonMatch[1];
-    }
-    
-    return JSON.parse(jsonText);
+    return extractJsonFromResponse(content);
   } catch (error) {
     console.error('Study plan generation error:', error.message);
     // Return a basic structure if AI fails
@@ -355,15 +389,7 @@ Structure this into JSON format:`;
     );
 
     const content = response.data.choices[0].message.content;
-    
-    // Extract JSON
-    let jsonText = content;
-    const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
-    if (jsonMatch) {
-      jsonText = jsonMatch[1];
-    }
-    
-    return JSON.parse(jsonText);
+    return extractJsonFromResponse(content);
   } catch (error) {
     if (error.response) {
       throw new Error(`Exam structuring failed: ${error.response.data.error?.message || error.message}`);

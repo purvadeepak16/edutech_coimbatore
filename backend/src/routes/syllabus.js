@@ -215,8 +215,24 @@ router.post('/manual', async (req, res) => {
       });
     }
 
-    // Generate AI proposal
-    const proposedUnits = await proposeSyllabus(subject, level);
+    // Generate AI proposal (if AI is unavailable, fall back to a deterministic proposal)
+    let proposedUnits;
+    try {
+      proposedUnits = await proposeSyllabus(subject, level);
+    } catch (aiError) {
+      console.warn('AI proposeSyllabus failed, falling back to local proposal:', aiError.message);
+      // Fallback deterministic proposal: create 4 units with simple topics derived from subject
+      const baseTopics = (subject || 'Topic').split(/\s+/).filter(Boolean);
+      const topicSeed = baseTopics.length > 0 ? baseTopics : ['Introduction', 'Core', 'Advanced'];
+      proposedUnits = Array.from({ length: 4 }).map((_, ui) => ({
+        name: `Unit ${ui + 1}`,
+        topics: Array.from({ length: Math.min(3, topicSeed.length) }).map((__, ti) => ({
+          title: `${topicSeed[ti % topicSeed.length]} - Part ${ui + 1}`,
+          difficulty: ti === 0 ? 'easy' : ti === 1 ? 'medium' : 'hard',
+          estimatedHours: 2 + ui
+        }))
+      }));
+    }
 
     // Normalize syllabus
     const normalizedSyllabus = normalizeSyllabus({

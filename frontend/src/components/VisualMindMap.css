@@ -1,0 +1,211 @@
+.visual-mindmap-container {
+  width: 100%;
+  height: calc(100vh - 180px);
+  min-height: 650px;
+  background: var(--color-cream);
+  border-radius: var(--card-radius);
+  border: var(--neo-border);
+  box-shadow: var(--neo-shadow-large);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.visual-mindmap-container.fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  border-radius: 0;
+  min-height: 100vh;
+}
+
+.visual-mindmap-empty {
+  width: 100%;
+  height: 500px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-white);
+  border-radius: var(--card-radius);
+  border: var(--neo-border);
+  box-shadow: var(--neo-shadow);
+  color: var(--color-gray-text);
+}
+
+.visual-mindmap-empty p {
+  margin: 0.5rem 0;
+  font-size: 1.1rem;
+}
+
+.mindmap-svg {
+  width: 100%;
+  height: 100%;
+  background: var(--color-white);
+  background-image: 
+    radial-gradient(circle at center, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-position: center center;
+}
+
+.connection-line {
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.connection-line:hover {
+  stroke-width: 3;
+  opacity: 0.6;
+}
+
+.node-group {
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mind-node {
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: drop-shadow(3px 3px 4px rgba(0, 0, 0, 0.15));
+}
+
+.mind-node:hover {
+  filter: brightness(1.08) drop-shadow(4px 4px 6px rgba(0, 0, 0, 0.2));
+  transform: scale(1.03);
+}
+
+.node-text {
+  pointer-events: none;
+  user-select: none;
+  text-rendering: optimizeLegibility;
+}
+
+.expand-indicator {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.expand-indicator:hover {
+  transform: scale(1.15);
+}
+
+.mindmap-controls {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 10;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  max-width: 400px;
+}
+
+.control-btn {
+  padding: 0.6rem 1rem;
+  background: var(--color-soft-teal);
+  color: var(--color-navy);
+  border: var(--neo-border);
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 0.875rem;
+  cursor: pointer;
+  box-shadow: var(--neo-shadow);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+}
+
+.control-btn-fullscreen {
+  background: var(--color-soft-purple);
+}
+
+.control-btn:hover {
+  background: var(--color-soft-blue);
+  transform: translateY(-2px);
+  box-shadow: var(--neo-shadow-large);
+}
+
+.control-btn-fullscreen:hover {
+  background: var(--color-soft-pink);
+}
+
+.control-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: var(--neo-shadow-hover);
+}
+
+.zoom-indicator {
+  padding: 0.6rem 1rem;
+  background: var(--color-soft-yellow);
+  color: var(--color-navy);
+  border: var(--neo-border);
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 0.875rem;
+  box-shadow: var(--neo-shadow);
+  display: inline-block;
+}
+
+.mindmap-legend {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.75rem 1.5rem;
+  background: var(--color-soft-purple);
+  border: var(--neo-border);
+  border-radius: 12px;
+  box-shadow: var(--neo-shadow);
+  color: var(--color-navy);
+  font-size: 0.875rem;
+  z-index: 10;
+}
+
+.mindmap-legend p {
+  margin: 0;
+}
+
+.mindmap-legend strong {
+  font-weight: 700;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.mind-node {
+  animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .mindmap-controls {
+    top: 0.5rem;
+    right: 0.5rem;
+    left: 0.5rem;
+    max-width: 100%;
+    justify-content: center;
+  }
+
+  .control-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .mindmap-legend {
+    bottom: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+  }
+
+  .visual-mindmap-container {
+    height: calc(100vh - 150px);
+    min-height: 400px;
+  }
+}

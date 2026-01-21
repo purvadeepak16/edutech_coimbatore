@@ -6,6 +6,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import mindmapRoutes from './routes/mindmap.routes.js';
+import visualMindMapRoutes from './routes/visualMindMap.routes.js';
 import zombieRoutes from './routes/zombieRoutes.js';
 import openrouterRoutes from './routes/openrouter.routes.js';
 
@@ -64,6 +65,7 @@ app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 app.use(express.json());
 app.use('/api/mindmap', mindmapRoutes);
+app.use('/api/visual-mindmap', visualMindMapRoutes);
 app.use('/api/zombie', zombieRoutes);
 app.use('/api/openrouter', openrouterRoutes);
 

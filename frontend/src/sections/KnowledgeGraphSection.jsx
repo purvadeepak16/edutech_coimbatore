@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { Network, AlertCircle, Lock, CheckCircle2 } from "lucide-react";
 import MindMap from "../components/MindMap";
+// VisualMindMap will be loaded on its own page
 import "./KnowledgeGraphSection.css";
+import VisualMapButton from '../components/VisualMapButton';
 import { useStudyMap } from "../context/StudyMapContext";
 
 /* ---------- Tree Node ---------- */
@@ -38,6 +40,7 @@ const TreeNode = ({ title, status, progress, children }) => {
 /* ---------- MAIN ---------- */
 const KnowledgeGraphSection = () => {
   const [isMindMapOpen, setIsMindMapOpen] = useState(false);
+  const [loadingVisual, setLoadingVisual] = useState(false);
 
   const {
     topic,
@@ -225,15 +228,9 @@ const KnowledgeGraphSection = () => {
       )}
 
       {/* OPEN VISUAL MAP */}
-      <button
-        className="action-link"
-        onClick={() => {
-          if (!mindMapData) return alert("Generate AI first");
-          setIsMindMapOpen(true);
-        }}
-      >
-        <Network size={16} /> Open Visual Mind Map
-      </button>
+      <VisualMapButton topic={topic} loading={loadingVisual} setLoading={setLoadingVisual} />
+
+      {/* Visual Mind Map opens on its own page */}
 
       <MindMap isOpen={isMindMapOpen} onClose={() => setIsMindMapOpen(false)} />
     </section>

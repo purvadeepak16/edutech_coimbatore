@@ -1,26 +1,19 @@
 import { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
 import './SyllabusIngestion.css';
 import SyllabusEditor from './SyllabusEditor';
 
 const API_BASE_URL = 'http://localhost:5000/api';
 
 function SyllabusIngestion() {
-  const { currentUser } = useAuth();
   const [selectedMode, setSelectedMode] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [syllabus, setSyllabus] = useState(null);
   const [warnings, setWarnings] = useState(null);
-  const [studyPlan, setStudyPlan] = useState(null);
-  const [importantPoints, setImportantPoints] = useState(null);
-  const [recommendations, setRecommendations] = useState(null);
 
   // PDF Mode State
   const [pdfFile, setPdfFile] = useState(null);
   const [pdfSubject, setPdfSubject] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
 
   // Manual Mode State
   const [manualSubject, setManualSubject] = useState('');
@@ -36,9 +29,6 @@ function SyllabusIngestion() {
     setError(null);
     setSyllabus(null);
     setWarnings(null);
-    setStudyPlan(null);
-    setImportantPoints(null);
-    setRecommendations(null);
 
     // Load available exams for exam mode
     if (mode === 'exam') {
@@ -60,21 +50,6 @@ function SyllabusIngestion() {
       return;
     }
 
-    if (!startDate || !endDate) {
-      setError('Please provide both start and end dates');
-      return;
-    }
-
-    if (new Date(endDate) <= new Date(startDate)) {
-      setError('End date must be after start date');
-      return;
-    }
-
-    if (!currentUser) {
-      setError('Please log in to upload syllabus');
-      return;
-    }
-
     setLoading(true);
     setError(null);
 
@@ -82,9 +57,6 @@ function SyllabusIngestion() {
       const formData = new FormData();
       formData.append('pdf', pdfFile);
       formData.append('subject', pdfSubject);
-      formData.append('startDate', startDate);
-      formData.append('endDate', endDate);
-      formData.append('userId', currentUser.uid);
 
       const response = await fetch(`${API_BASE_URL}/syllabus/pdf`, {
         method: 'POST',
@@ -99,20 +71,6 @@ function SyllabusIngestion() {
 
       setSyllabus(data.syllabus);
       setWarnings(data.warnings);
-      setStudyPlan(data.dailySchedule || data.studyPlan);
-      setImportantPoints(data.importantPoints);
-      setRecommendations(data.recommendations);
-      
-      // Save to localStorage as backup for immediate calendar display
-      if (data.dailySchedule) {
-        localStorage.setItem('dailySchedule', JSON.stringify(data.dailySchedule));
-        console.log('💾 Saved schedule to localStorage:', data.dailySchedule);
-      }
-      
-      // Show success message with study plan info
-      if (data.importantPoints && data.importantPoints.length > 0) {
-        console.log(`✅ Study plan generated with ${data.importantPoints.length} important points highlighted`);
-      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -217,8 +175,6 @@ function SyllabusIngestion() {
       setSyllabus(null);
       setPdfFile(null);
       setPdfSubject('');
-      setStartDate('');
-      setEndDate('');
       setManualSubject('');
       setManualLevel('');
       setExamType('');
@@ -233,93 +189,11 @@ function SyllabusIngestion() {
   const handleCancel = () => {
     setSyllabus(null);
     setWarnings(null);
-    setStudyPlan(null);
-    setImportantPoints(null);
-    setRecommendations(null);
   };
 
   if (syllabus) {
     return (
       <div className="syllabus-ingestion">
-        {/* Display Study Plan and Important Points */}
-        {(studyPlan || importantPoints) && (
-          <div className="study-plan-section">
-            <h2>📋 Daily Study Schedule</h2>
-            
-            {studyPlan && studyPlan.schedule && (
-              <div className="daily-schedule">
-                <h3>Day-by-Day Plan ({studyPlan.totalDays} days • {studyPlan.totalTopics} topics)</h3>
-                <p className="schedule-dates">From {studyPlan.startDate} to {studyPlan.endDate}</p>
-                <div className="schedule-grid">
-                  {studyPlan.schedule.slice(0, 6).map((day) => (
-                    <div key={day.day} className="day-card">
-                      <div className="day-header">Day {day.day}</div>
-                      <div className="day-date">{new Date(day.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
-                      <div className="day-topics-count">{day.topicCount} topic{day.topicCount !== 1 ? 's' : ''}</div>
-                      <div className="day-topics">
-                        {day.topics.slice(0, 2).map((topic, idx) => (
-                          <div key={idx} className="topic-item">• {topic}</div>
-                        ))}
-                        {day.topics.length > 2 && (
-                          <div className="more-topics">+{day.topics.length - 2} more</div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                {studyPlan.schedule.length > 6 && (
-                  <p className="more-days">+ {studyPlan.schedule.length - 6} more days in your plan</p>
-                )}
-              </div>
-            )}
-
-            {importantPoints && importantPoints.length > 0 && (
-              <div className="important-points">
-                <h3>⭐ Important Points Highlighted</h3>
-                <div className="points-list">
-                  {importantPoints.map((point, idx) => (
-                    <div 
-                      key={idx} 
-                      className={`point-card priority-${point.priority}`}
-                    >
-                      <div className="point-header">
-                        <span className="point-topic">{point.topic}</span>
-                        <span className={`priority-badge ${point.priority}`}>
-                          {point.priority.toUpperCase()}
-                        </span>
-                      </div>
-                      <div className="point-unit">Unit: {point.unit}</div>
-                      <div className="point-reason">{point.reason}</div>
-                      <div className="point-meta">
-                        {point.estimatedHours && (
-                          <span className="meta-item">⏱️ {point.estimatedHours}h</span>
-                        )}
-                        {point.isPrerequisite && (
-                          <span className="meta-item prerequisite">📚 Prerequisite</span>
-                        )}
-                        {point.requiresExtraPractice && (
-                          <span className="meta-item practice">💪 Extra Practice Needed</span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {recommendations && recommendations.length > 0 && (
-              <div className="recommendations">
-                <h3>💡 Recommendations</h3>
-                <ul>
-                  {recommendations.map((rec, idx) => (
-                    <li key={idx}>{rec}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        )}
-
         <SyllabusEditor
           syllabus={syllabus}
           warnings={warnings}
@@ -383,28 +257,6 @@ function SyllabusIngestion() {
               onChange={(e) => setPdfSubject(e.target.value)}
               placeholder="e.g., Physics, Mathematics"
             />
-          </div>
-          <div className="form-row">
-            <div className="form-group">
-              <label>Start Date *</label>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                min={new Date().toISOString().split('T')[0]}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>End Date *</label>
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                min={startDate || new Date().toISOString().split('T')[0]}
-                required
-              />
-            </div>
           </div>
           <div className="form-group">
             <label>Upload PDF</label>

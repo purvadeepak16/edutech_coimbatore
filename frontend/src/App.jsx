@@ -21,6 +21,7 @@ import GamificationPage from './pages/GamificationPage';
 import ZombieGame from './pages/games/ZombieGame';
 import MemoryCardGame from './pages/games/MemoryCardGame';
 import WhackAMoleGame from './pages/games/WhackAMoleGame';
+import VisualMindMapPage from './pages/VisualMindMapPage';
 
 import './App.css';
 import './pages/PageStyles.css';
@@ -41,6 +42,7 @@ function AppContent() {
         <Route path="/study-plan" element={<DashboardPage />} />
         <Route path="/learning-modes" element={<DashboardPage />} />
         <Route path="/mindmap" element={<MindMapPage />} />
+        <Route path="/visual-map" element={<VisualMindMapPage />} />
         <Route path="/active-session" element={<DashboardPage />} />
         <Route path="/ask-ai" element={<AskAIPage />} />
         <Route path="/mastery-score" element={<MasteryScorePage />} />
