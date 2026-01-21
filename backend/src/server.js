@@ -13,6 +13,8 @@ import openrouterRoutes from './routes/openrouter.routes.js';
 import syllabusRoutes from './routes/syllabus.js';
 
 import ttsRoutes from "./routes/tts.routes.js";
+import dns from "dns";
+dns.setDefaultResultOrder("ipv4first");
 
 
 const app = express();
