@@ -236,15 +236,6 @@ const StudyPlanSection = () => {
             {/* TIMELINE */}
             <div className="timeline">
                 <TimelineItem
-                    time="2:00 PM"
-                    icon={Headphones}
-                    title="Audio Learning"
-                    subtitle="Biology - Chapter 5: Cells"
-                    duration="1.5 hours"
-                    progress={45}
-                    color="var(--color-soft-pink-light)"
-                />
-                <TimelineItem
                     time="3:30 PM"
                     icon={BookOpen}
                     title="Reading Notes"
