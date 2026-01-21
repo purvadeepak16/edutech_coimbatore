@@ -3,6 +3,85 @@ import { Lightbulb, Send, Clock, ThumbsUp, ArrowRight } from 'lucide-react';
 import aiRobotImg from '../assets/ai-robot.png';
 import './AIDoubtSolverSection.css';
 
+// Extract readable text from various AI response shapes.
+const extractReadableText = (raw) => {
+    if (!raw && raw !== 0) return null;
+
+    // If it's already a string, try to parse JSON first, otherwise return the string.
+    if (typeof raw === 'string') {
+        try {
+            const parsed = JSON.parse(raw);
+            return extractReadableText(parsed);
+        } catch (e) {
+            return raw;
+        }
+    }
+
+    // Handle common OpenAI-like shapes: { choices: [...] }
+    const collect = [];
+
+    const pushIfText = (txt) => {
+        if (!txt && txt !== 0) return;
+        if (typeof txt !== 'string') txt = String(txt);
+        const trimmed = txt.trim();
+        if (!trimmed) return;
+        // skip short metadata values like roles or ids
+        if (trimmed.length < 20 && /^(assistant|user|system|true|false|\d+)$/.test(trimmed)) return;
+        collect.push(trimmed);
+    };
+
+    if (Array.isArray(raw)) {
+        raw.forEach((r) => {
+            const t = extractReadableText(r);
+            if (t) pushIfText(t);
+        });
+    } else if (typeof raw === 'object') {
+        // choices (chat/completion)
+        if (Array.isArray(raw.choices)) {
+            raw.choices.forEach((c) => {
+                if (c.message) {
+                    if (typeof c.message === 'string') pushIfText(c.message);
+                    else if (c.message.content) pushIfText(c.message.content);
+                } else if (c.text) pushIfText(c.text);
+                else if (c.delta && c.delta.content) pushIfText(c.delta.content);
+                else pushIfText(JSON.stringify(c));
+            });
+        } else if (raw.message) {
+            if (typeof raw.message === 'string') pushIfText(raw.message);
+            else if (raw.message.content) pushIfText(raw.message.content);
+        } else if (raw.answer && typeof raw.answer === 'string') {
+            pushIfText(raw.answer);
+        } else if (raw.output_text && typeof raw.output_text === 'string') {
+            pushIfText(raw.output_text);
+        } else if (raw.text && typeof raw.text === 'string') {
+            pushIfText(raw.text);
+        } else if (raw.response && typeof raw.response === 'string') {
+            pushIfText(raw.response);
+        } else {
+            // Generic recursive traversal: gather string leaves, skip known metadata keys
+            const skipKeys = new Set(['role', 'id', 'type', 'index', 'metadata', 'refusal', 'reasoning']);
+            const walk = (obj) => {
+                if (!obj && obj !== 0) return;
+                if (typeof obj === 'string') return pushIfText(obj);
+                if (Array.isArray(obj)) return obj.forEach(walk);
+                if (typeof obj === 'object') {
+                    Object.entries(obj).forEach(([k, v]) => {
+                        if (skipKeys.has(k)) return;
+                        walk(v);
+                    });
+                } else if (typeof obj === 'number' || typeof obj === 'boolean') {
+                    pushIfText(String(obj));
+                }
+            };
+            walk(raw);
+        }
+    }
+
+    if (collect.length === 0) return null;
+
+    // Join collected pieces, preserve paragraphs and line breaks
+    return collect.join('\n\n');
+};
 const DoubtItem = ({ question, time, confidence, isLast }) => (
     <div className={`doubt-item ${isLast ? 'last' : ''}`}>
         <div className="doubt-content">
@@ -33,9 +112,9 @@ const AIDoubtSolverSection = () => {
         try {
             const { askOpenRouter } = await import('../services/aiApi');
             const res = await askOpenRouter(query);
-            if (res?.answer) setAnswer(res.answer);
-            else if (res?.raw) setAnswer(JSON.stringify(res.raw));
-            else setError('No response from AI');
+            const text = extractReadableText(res?.answer ?? res?.raw ?? res ?? null);
+            if (text) setAnswer(text);
+            else setError('No readable text found in AI response');
         } catch (err) {
             setError(err?.message || 'Request failed');
         } finally {
@@ -86,7 +165,7 @@ const AIDoubtSolverSection = () => {
                     {answer && (
                         <div className="ai-answer">
                             <h4>AI Answer</h4>
-                            <div className="ai-answer-text">{answer}</div>
+                            <div className="ai-answer-text" style={{ whiteSpace: 'pre-wrap' }}>{answer}</div>
                         </div>
                     )}
                 </div>
