@@ -195,6 +195,37 @@
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
 }
 
+/* Level-specific light backgrounds */
+.mind-node--root {
+    background: linear-gradient(135deg, #DCEEFB 0%, #D0E8FF 100%);
+    color: #04263d;
+    border: 1px solid rgba(4, 38, 61, 0.06);
+    box-shadow: 0 10px 30px rgba(4, 38, 61, 0.08);
+}
+
+.mind-node--level1 {
+    background: linear-gradient(135deg, #F3E8FF 0%, #EAD9FF 100%);
+    color: #2d083f;
+    border: 1px solid rgba(45, 8, 63, 0.06);
+    box-shadow: 0 8px 24px rgba(45, 8, 63, 0.06);
+}
+
+.mind-node--level2 {
+    background: linear-gradient(135deg, #FFF7ED 0%, #FFF2E3 100%);
+    color: #3b2b14;
+    border: 1px solid rgba(59, 43, 20, 0.04);
+    box-shadow: 0 6px 18px rgba(59, 43, 20, 0.04);
+}
+
+.mind-node-label {
+    pointer-events: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 260px;
+}
+
 .mind-node.selected {
     box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5);
 }
