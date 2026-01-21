@@ -1,6 +1,28 @@
 import { randomUUID } from 'crypto';
 
 /**
+ * Parse topic title into subtopics array by splitting on comma or period
+ * Example: "Food Crop, Micro-organisms. Soil Fertility" 
+ * Returns: ["Food Crop", "Micro-organisms", "Soil Fertility"]
+ * @param {string} title - Topic title (comma/period separated)
+ * @returns {Array} Array of subtopic strings
+ */
+function parseSubtopics(title) {
+  if (!title || typeof title !== 'string') {
+    return [title];
+  }
+  
+  // Split by comma or period, trim whitespace, filter empty strings
+  const subtopics = title
+    .split(/[,.]/)
+    .map(s => s.trim())
+    .filter(s => s.length > 0);
+  
+  // If nothing found after split, return original title as single item
+  return subtopics.length > 0 ? subtopics : [title];
+}
+
+/**
  * Normalize syllabus data to unified format
  * @param {Object} params - Normalization parameters
  * @param {string} params.subject - Subject name
@@ -17,6 +39,7 @@ export function normalizeSyllabus({ subject, source, units, level, metadata = {}
     topics: unit.topics.map(topic => ({
       id: topic.id || randomUUID(),
       title: topic.title,
+      subtopics: parseSubtopics(topic.title),
       difficulty: topic.difficulty || undefined,
       estimatedHours: topic.estimatedHours || undefined,
       confidence: topic.confidence || undefined

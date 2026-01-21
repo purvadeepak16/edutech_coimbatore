@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import './SyllabusEditor.css';
+import SchedulePreview from './SchedulePreview';
 
 function SyllabusEditor({ syllabus: initialSyllabus, warnings, onConfirm, onCancel, loading }) {
   const [syllabus, setSyllabus] = useState(initialSyllabus);
@@ -120,6 +121,9 @@ function SyllabusEditor({ syllabus: initialSyllabus, warnings, onConfirm, onCanc
           </button>
         </div>
       </div>
+
+      {/* Schedule Preview */}
+      <SchedulePreview />
 
       {warnings && (
         <div className="warning-banner">

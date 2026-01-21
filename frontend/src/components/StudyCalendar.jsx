@@ -1,27 +1,50 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import Toast from './Toast';
 import './StudyCalendar.css';
 
+const API_BASE_URL = 'http://localhost:5000/api';
+
 function StudyCalendar({ dailySchedule }) {
+  const { currentUser } = useAuth();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [hoveredDate, setHoveredDate] = useState(null);
   const [scheduleMap, setScheduleMap] = useState(new Map());
   const [showToast, setShowToast] = useState(false);
   const [toastData, setToastData] = useState(null);
+  const [selectedDateTasks, setSelectedDateTasks] = useState(null);
+  const [showTaskModal, setShowTaskModal] = useState(false);
 
   useEffect(() => {
-    // Create a map of dates to topics for quick lookup
-    if (dailySchedule && dailySchedule.schedule) {
-      const map = new Map();
-      dailySchedule.schedule.forEach(day => {
-        map.set(day.date, day);
-      });
-      setScheduleMap(map);
-      console.log('📅 Schedule loaded:', dailySchedule);
-      console.log('🗓️ Schedule map size:', map.size);
-      console.log('📌 Sample dates in map:', Array.from(map.keys()).slice(0, 5));
+    // Fetch real schedule if user is logged in
+    if (currentUser && !dailySchedule) {
+      fetchSchedule();
+    } else if (dailySchedule && dailySchedule.schedule) {
+      updateScheduleMap(dailySchedule);
     }
-  }, [dailySchedule]);
+  }, [currentUser, dailySchedule]);
+
+  const fetchSchedule = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/syllabus/schedule/${currentUser.uid}`);
+      const data = await response.json();
+      if (data.success && data.schedule) {
+        updateScheduleMap(data.schedule);
+      }
+    } catch (err) {
+      console.error('Failed to fetch schedule:', err);
+    }
+  };
+
+  const updateScheduleMap = (schedule) => {
+    const map = new Map();
+    schedule.schedule.forEach(day => {
+      map.set(day.date, day);
+    });
+    setScheduleMap(map);
+    console.log('📅 Schedule loaded:', schedule);
+    console.log('🗓️ Schedule map size:', map.size);
+  };
 
   const getDaysInMonth = (date) => {
     const year = date.getFullYear();
@@ -73,20 +96,18 @@ function StudyCalendar({ dailySchedule }) {
         key={day}
         className={`calendar-day ${hasTopics ? 'has-topics' : ''} ${isToday ? 'today' : ''}`}
         onClick={() => {
-          console.log('🖱️ Clicked date:', dateStr);
-          console.log('📊 Day data:', dayData);
-          console.log('✅ Has topics:', hasTopics);
+          if (hasTopics && dayData) {
+            setSelectedDateTasks(dayData);
+            setShowTaskModal(true);
+          }
         }}
         onMouseEnter={() => {
-          console.log('🎯 Hovering over:', dateStr, 'Has topics:', hasTopics);
           if (hasTopics) {
-            console.log('🎉 Showing toast for:', dayData);
             setToastData(dayData);
             setShowToast(true);
           }
         }}
         onMouseLeave={() => {
-          // Keep toast visible for a moment after mouse leaves
           setTimeout(() => {
             setShowToast(false);
             setToastData(null);
@@ -150,19 +171,65 @@ function StudyCalendar({ dailySchedule }) {
                   <li key={idx}>{topic}</li>
                 ))}
               </ul>
-              {toastData.units && toastData.units.length > 0 && (
-                <div className="units-info">
-                  <strong>Units:</strong> {toastData.units.join(', ')}
-                </div>
-              )}
             </div>
           }
         />
       )}
 
-      {!dailySchedule && (
-        <div className="no-schedule">
-          <p>No study schedule yet. Upload a syllabus to get started!</p>
+      {/* Task Modal */}
+      {showTaskModal && selectedDateTasks && (
+        <div className="task-modal-overlay" onClick={() => setShowTaskModal(false)}>
+          <div className="task-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div>
+                <h3>📚 Study Tasks</h3>
+                <p>
+                  {new Date(selectedDateTasks.date + 'T00:00:00').toLocaleDateString('en-US', { 
+                    weekday: 'long',
+                    month: 'long', 
+                    day: 'numeric',
+                    year: 'numeric'
+                  })}
+                </p>
+              </div>
+              <button className="close-modal" onClick={() => setShowTaskModal(false)}>
+                ✕
+              </button>
+            </div>
+            <div className="modal-content">
+              {selectedDateTasks.topicDetails && selectedDateTasks.topicDetails.length > 0 ? (
+                <div className="tasks-detail-list">
+                  {selectedDateTasks.topicDetails.map((topic, idx) => (
+                    <div key={topic.id || idx} className="task-detail-item">
+                      <div className="task-checkbox">
+                        <input type="checkbox" id={`modal-task-${topic.id}`} />
+                      </div>
+                      <div className="task-detail-content">
+                        <label htmlFor={`modal-task-${topic.id}`} className="task-name">
+                          {topic.title}
+                        </label>
+                        <div className="task-detail-meta">
+                          {topic.unitName && (
+                            <span className="unit-label">{topic.unitName}</span>
+                          )}
+                          {topic.difficulty && (
+                            <span className={`difficulty-label diff-${topic.difficulty}`}>
+                              {topic.difficulty}
+                            </span>
+                          )}
+                          {topic.estimatedHours && (
+                            <span className="hours-label">⏱️ {topic.estimatedHours}h</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="no-details">No detailed tasks available</p>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>

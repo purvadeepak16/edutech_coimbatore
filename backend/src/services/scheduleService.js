@@ -1,10 +1,11 @@
 /**
- * Generate daily study schedule by distributing topics across dates
+ * Generate daily study schedule by distributing subtopics across dates
+ * Topics are split into subtopics (comma/period separated), then distributed
  * @param {Array} units - Syllabus units with topics
  * @param {Date} startDate - Study start date
  * @param {Date} endDate - Study end date
  * @param {Array} excludeTopicIds - Topic IDs to exclude (already assigned)
- * @returns {Array} Daily schedule with date and topics
+ * @returns {Array} Daily schedule with date and subtopics
  */
 export function generateDailySchedule(units, startDate, endDate, excludeTopicIds = []) {
   const excludeSet = new Set(excludeTopicIds);
@@ -14,55 +15,75 @@ export function generateDailySchedule(units, startDate, endDate, excludeTopicIds
   const end = new Date(endDate);
   const totalDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
 
-  // Flatten all topics from all units, excluding already assigned ones
-  const allTopics = [];
+  // Flatten all subtopics from all units, excluding already assigned topic IDs
+  const allSubtopics = [];
   units.forEach(unit => {
     unit.topics.forEach(topic => {
       if (!excludeSet.has(topic.id)) {
-        allTopics.push({
-          ...topic,
-          unitName: unit.name,
-          unitId: unit.id
+        // Get subtopics array from topic (already parsed by normalizeSyllabus)
+        const subtopics = topic.subtopics || [topic.title];
+        
+        // Create a subtopic entry for each subtopic string
+        subtopics.forEach((subtopic, idx) => {
+          allSubtopics.push({
+            id: `${topic.id}-sub-${idx}`,
+            parentTopicId: topic.id,
+            title: subtopic,
+            originalTitle: topic.title,
+            difficulty: topic.difficulty,
+            estimatedHours: topic.estimatedHours,
+            unitName: unit.name,
+            unitId: unit.id
+          });
         });
       }
     });
   });
 
-  const totalTopics = allTopics.length;
+  const totalSubtopics = allSubtopics.length;
   
-  if (totalTopics === 0) {
+  console.log(`📊 Schedule Generation:`);
+  console.log(`   - Total days: ${totalDays}`);
+  console.log(`   - Total subtopics to distribute: ${totalSubtopics}`);
+  console.log(`   - Sample subtopic:`, allSubtopics[0]);
+  
+  if (totalSubtopics === 0) {
     return []; // No topics to assign
   }
   
-  // Calculate topics per day (distribute evenly)
-  const topicsPerDay = Math.ceil(totalTopics / totalDays);
+  // Calculate subtopics per day (distribute evenly)
+  const subtopicsPerDay = Math.ceil(totalSubtopics / totalDays);
+  console.log(`   - Subtopics per day: ${subtopicsPerDay}`);
 
   // Generate daily schedule
   const dailySchedule = [];
-  let topicIndex = 0;
+  let subtopicIndex = 0;
   let currentDate = new Date(start);
 
-  for (let day = 0; day < totalDays && topicIndex < totalTopics; day++) {
-    const dayTopics = [];
+  for (let day = 0; day < totalDays && subtopicIndex < totalSubtopics; day++) {
+    const daySubtopics = [];
     const dayTopicIds = [];
-    const topicsForToday = Math.min(topicsPerDay, totalTopics - topicIndex);
+    const subtopicsForToday = Math.min(subtopicsPerDay, totalSubtopics - subtopicIndex);
 
-    for (let i = 0; i < topicsForToday && topicIndex < totalTopics; i++) {
-      const topic = allTopics[topicIndex];
-      dayTopics.push(topic);
-      dayTopicIds.push(topic.id);
-      topicIndex++;
+    for (let i = 0; i < subtopicsForToday && subtopicIndex < totalSubtopics; i++) {
+      const subtopic = allSubtopics[subtopicIndex];
+      daySubtopics.push(subtopic);
+      // Track unique parent topic IDs for reference
+      if (!dayTopicIds.includes(subtopic.parentTopicId)) {
+        dayTopicIds.push(subtopic.parentTopicId);
+      }
+      subtopicIndex++;
     }
 
-    if (dayTopics.length > 0) {
+    if (daySubtopics.length > 0) {
       dailySchedule.push({
         date: new Date(currentDate).toISOString().split('T')[0],
         dateObject: new Date(currentDate),
         day: day + 1,
-        topics: dayTopics,
+        topics: daySubtopics,
         topicIds: dayTopicIds,
-        topicCount: dayTopics.length,
-        units: [...new Set(dayTopics.map(t => t.unitName))]
+        topicCount: daySubtopics.length,
+        units: [...new Set(daySubtopics.map(t => t.unitName))]
       });
     }
 

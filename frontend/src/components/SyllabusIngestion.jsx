@@ -1,19 +1,27 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './SyllabusIngestion.css';
 import SyllabusEditor from './SyllabusEditor';
+import ScheduleView from './ScheduleView';
+import { useAuth } from '../context/AuthContext';
 
 const API_BASE_URL = 'http://localhost:5000/api';
 
 function SyllabusIngestion() {
+  const { currentUser, userData } = useAuth();
   const [selectedMode, setSelectedMode] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [syllabus, setSyllabus] = useState(null);
   const [warnings, setWarnings] = useState(null);
+  const [generatedSchedule, setGeneratedSchedule] = useState(null);
+  const [importantTopics, setImportantTopics] = useState(null);
+  const [showSchedule, setShowSchedule] = useState(false);
 
   // PDF Mode State
   const [pdfFile, setPdfFile] = useState(null);
   const [pdfSubject, setPdfSubject] = useState('');
+  const [pdfStartDate, setPdfStartDate] = useState('');
+  const [pdfEndDate, setPdfEndDate] = useState('');
 
   // Manual Mode State
   const [manualSubject, setManualSubject] = useState('');
@@ -23,6 +31,33 @@ function SyllabusIngestion() {
   const [examType, setExamType] = useState('');
   const [examSubject, setExamSubject] = useState('');
   const [availableExams, setAvailableExams] = useState([]);
+
+  // Load stored syllabus + schedule when the page opens
+  useEffect(() => {
+    const loadExisting = async () => {
+      if (!currentUser) return;
+      try {
+        setLoading(true);
+        const response = await fetch(`${API_BASE_URL}/syllabus/data/${currentUser.uid}`);
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok && !data.success) return; // Nothing saved yet
+        if (data.syllabus) {
+          setSyllabus(data.syllabus);
+          setImportantTopics(data.syllabus.importantTopics || []);
+        }
+        if (data.schedule) {
+          setGeneratedSchedule(data.schedule);
+          setShowSchedule(true);
+        }
+      } catch (err) {
+        console.error('Failed to load saved syllabus:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadExisting();
+  }, [currentUser]);
 
   const handleModeSelect = async (mode) => {
     setSelectedMode(mode);
@@ -50,6 +85,21 @@ function SyllabusIngestion() {
       return;
     }
 
+    if (!currentUser) {
+      setError('You must be logged in to upload a syllabus');
+      return;
+    }
+
+    if (!pdfStartDate || !pdfEndDate) {
+      setError('Please provide both start and end dates for your study plan');
+      return;
+    }
+
+    if (new Date(pdfEndDate) <= new Date(pdfStartDate)) {
+      setError('End date must be after start date');
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -57,6 +107,9 @@ function SyllabusIngestion() {
       const formData = new FormData();
       formData.append('pdf', pdfFile);
       formData.append('subject', pdfSubject);
+      formData.append('userId', currentUser.uid);
+      formData.append('startDate', pdfStartDate);
+      formData.append('endDate', pdfEndDate);
 
       const response = await fetch(`${API_BASE_URL}/syllabus/pdf`, {
         method: 'POST',
@@ -84,6 +137,11 @@ function SyllabusIngestion() {
       return;
     }
 
+    if (!currentUser) {
+      setError('You must be logged in to generate a syllabus');
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -96,6 +154,7 @@ function SyllabusIngestion() {
         body: JSON.stringify({
           subject: manualSubject,
           level: manualLevel,
+          userId: currentUser.uid,
         }),
       });
 
@@ -119,6 +178,11 @@ function SyllabusIngestion() {
       return;
     }
 
+    if (!currentUser) {
+      setError('You must be logged in to load a syllabus');
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -131,6 +195,7 @@ function SyllabusIngestion() {
         body: JSON.stringify({
           examType,
           subject: examSubject,
+          userId: currentUser.uid,
         }),
       });
 
@@ -149,10 +214,19 @@ function SyllabusIngestion() {
   };
 
   const handleConfirm = async (editedSyllabus) => {
+    if (!currentUser) {
+      setError('You must be logged in to save a syllabus');
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
     try {
+      // Get dates from state or from syllabus metadata
+      const startDate = pdfStartDate || editedSyllabus.metadata?.startDate;
+      const endDate = pdfEndDate || editedSyllabus.metadata?.endDate;
+
       const response = await fetch(`${API_BASE_URL}/syllabus/confirm`, {
         method: 'POST',
         headers: {
@@ -160,6 +234,9 @@ function SyllabusIngestion() {
         },
         body: JSON.stringify({
           syllabus: editedSyllabus,
+          userId: currentUser.uid,
+          startDate,
+          endDate,
         }),
       });
 
@@ -169,16 +246,28 @@ function SyllabusIngestion() {
         throw new Error(data.message || 'Failed to confirm syllabus');
       }
 
-      alert('Syllabus confirmed and saved successfully!');
-      // Reset state
-      setSelectedMode(null);
-      setSyllabus(null);
-      setPdfFile(null);
-      setPdfSubject('');
-      setManualSubject('');
-      setManualLevel('');
-      setExamType('');
-      setExamSubject('');
+      // Fetch the generated schedule and important topics
+      if (data.scheduleGenerated) {
+        try {
+          const scheduleResponse = await fetch(`${API_BASE_URL}/syllabus/schedule/${currentUser.uid}`);
+          const scheduleData = await scheduleResponse.json();
+          if (scheduleData.success) {
+            setGeneratedSchedule(scheduleData.schedule);
+          }
+        } catch (err) {
+          console.error('Failed to fetch schedule:', err);
+        }
+      }
+
+      // Extract important topics from the data if available
+      if (data.importantPoints) {
+        setImportantTopics(data.importantPoints);
+      }
+
+      // Keep syllabus displayed with schedule below - don't reset the form
+      // User can still edit or upload a new one
+      console.log('✅ Syllabus confirmed and saved with schedule');
+      setShowSchedule(true);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -191,6 +280,83 @@ function SyllabusIngestion() {
     setWarnings(null);
   };
 
+  const handleCloseSchedule = () => {
+    setShowSchedule(false);
+    setGeneratedSchedule(null);
+    setImportantTopics(null);
+    // Reset all state
+    setSelectedMode(null);
+    setPdfFile(null);
+    setPdfSubject('');
+    setPdfStartDate('');
+    setPdfEndDate('');
+    setManualSubject('');
+    setManualLevel('');
+    setExamType('');
+    setExamSubject('');
+  };
+
+  // If we have a confirmed syllabus + schedule, show ingestion form + confirmed summary + schedule
+  if (syllabus && generatedSchedule && showSchedule) {
+    return (
+      <div className="syllabus-ingestion">
+        {/* Show ingestion options at top */}
+        <h1>Syllabus Ingestion</h1>
+        <p className="subtitle">Select a mode to upload a new syllabus (you can switch anytime)</p>
+
+        {error && (
+          <div className="error-message">
+            <span className="error-icon">⚠️</span>
+            {error}
+          </div>
+        )}
+
+        <div className="mode-selector">
+          <button
+            className={`mode-card ${selectedMode === 'pdf' ? 'selected' : ''}`}
+            onClick={() => handleModeSelect('pdf')}
+          >
+            <div className="mode-icon">📄</div>
+            <h3>PDF Upload</h3>
+            <p>Upload your syllabus PDF for automatic extraction</p>
+          </button>
+
+          <button
+            className={`mode-card ${selectedMode === 'manual' ? 'selected' : ''}`}
+            onClick={() => handleModeSelect('manual')}
+          >
+            <div className="mode-icon">✏️</div>
+            <h3>Manual Input</h3>
+            <p>Let AI propose topics based on subject and level</p>
+          </button>
+
+          <button
+            className={`mode-card ${selectedMode === 'exam' ? 'selected' : ''}`}
+            onClick={() => handleModeSelect('exam')}
+          >
+            <div className="mode-icon">🎓</div>
+            <h3>Exam-Based</h3>
+            <p>Load official syllabus for JEE, GATE, Olympiad</p>
+          </button>
+        </div>
+
+        {/* Show confirmed syllabus summary */}
+        <div style={{ marginTop: '2rem', paddingTop: '2rem', borderTop: '2px solid #e5e7eb' }}>
+          <h2 style={{ marginBottom: '0.5rem' }}>✅ Confirmed Syllabus</h2>
+          <p style={{ color: '#666', marginBottom: '1.5rem' }}>Subject: <strong>{syllabus.subject}</strong></p>
+          
+          {/* Show full schedule */}
+          <ScheduleView
+            schedule={generatedSchedule}
+            importantTopics={importantTopics}
+            onClose={() => setGeneratedSchedule(null)}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // If syllabus loaded but no schedule yet (editing mode), show editor
   if (syllabus) {
     return (
       <div className="syllabus-ingestion">
@@ -258,6 +424,26 @@ function SyllabusIngestion() {
               placeholder="e.g., Physics, Mathematics"
             />
           </div>
+          <div className="form-row">
+            <div className="form-group">
+              <label>Study Start Date</label>
+              <input
+                type="date"
+                value={pdfStartDate}
+                onChange={(e) => setPdfStartDate(e.target.value)}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label>Study End Date</label>
+              <input
+                type="date"
+                value={pdfEndDate}
+                onChange={(e) => setPdfEndDate(e.target.value)}
+                required
+              />
+            </div>
+          </div>
           <div className="form-group">
             <label>Upload PDF</label>
             <input
@@ -271,7 +457,7 @@ function SyllabusIngestion() {
             <button
               className="btn-primary"
               onClick={handlePdfUpload}
-              disabled={loading || !pdfFile}
+              disabled={loading || !pdfFile || !pdfStartDate || !pdfEndDate}
             >
               {loading ? 'Processing...' : 'Upload & Extract'}
             </button>

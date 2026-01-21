@@ -74,16 +74,36 @@ export async function getSyllabus(userId) {
 /**
  * Save topic assignments for specific dates
  * @param {string} userId - User ID
- * @param {Array} assignments - Array of {date, topics, units, topicIds}
+ * @param {Array} assignments - Array of {date, topics, units, topicIds, topicDetails}
+ * @param {boolean} checkExisting - Whether to check for existing assignments
  * @returns {Promise<void>}
  */
-export async function saveTopicAssignments(userId, assignments) {
+export async function saveTopicAssignments(userId, assignments, checkExisting = false) {
   try {
     const batch = db.batch();
+    let savedCount = 0;
     
-    assignments.forEach(assignment => {
+    for (const assignment of assignments) {
       const assignmentRef = db.collection('topicAssignments')
         .doc(`${userId}_${assignment.date}`);
+      
+      // Check if assignment already exists
+      if (checkExisting) {
+        const existingDoc = await assignmentRef.get();
+        if (existingDoc.exists) {
+          const existing = existingDoc.data();
+          const hasTopicDetails = existing.topicDetails && existing.topicDetails.length > 0;
+
+          // If we already have topicDetails stored, skip to avoid duplicates
+          if (hasTopicDetails) {
+            console.log(`⏭️ Skipping assignment for ${assignment.date} - already exists with topicDetails`);
+            continue;
+          }
+
+          // If topicDetails are missing (older data), overwrite to backfill details
+          console.log(`🔄 Overwriting assignment for ${assignment.date} to backfill topicDetails`);
+        }
+      }
       
       const cleanedAssignment = removeUndefined({
         userId,
@@ -91,17 +111,19 @@ export async function saveTopicAssignments(userId, assignments) {
         topics: assignment.topics || [],
         units: assignment.units || [],
         topicIds: assignment.topicIds || [],
-        topicCount: assignment.topics?.length || 0,
+        topicDetails: assignment.topicDetails || [],
+        topicCount: assignment.topics?.length || assignment.topicIds?.length || 0,
         completed: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       });
       
       batch.set(assignmentRef, cleanedAssignment, { merge: true });
-    });
+      savedCount += 1;
+    }
 
     await batch.commit();
-    console.log(`✅ Saved ${assignments.length} topic assignments for user: ${userId}`);
+    console.log(`✅ Saved ${savedCount} topic assignments for user: ${userId}`);
   } catch (error) {
     console.error('Error saving topic assignments:', error);
     throw new Error('Failed to save topic assignments');
@@ -196,15 +218,28 @@ export async function getDailySchedule(userId) {
     const schedule = [];
     let dayCounter = 1;
     assignments.forEach(data => {
-      schedule.push({
+      const daySchedule = {
         day: dayCounter++,
         date: data.date,
-        topics: data.topics,
-        units: data.units,
-        topicCount: data.topicCount,
+        topics: data.topics || [],
+        topicDetails: data.topicDetails || [],
+        units: data.units || [],
+        topicIds: data.topicIds || [],
+        topicCount: data.topicCount || data.topics?.length || 0,
         completed: data.completed || false
-      });
+      };
+      
+      // Debug logging to verify topicDetails are retrieved
+      if (daySchedule.topicDetails && daySchedule.topicDetails.length > 0) {
+        console.log(`✅ Day ${daySchedule.day} (${daySchedule.date}) has ${daySchedule.topicDetails.length} topic details:`, daySchedule.topicDetails[0]);
+      } else if (daySchedule.topics && daySchedule.topics.length > 0) {
+        console.warn(`⚠️ Day ${daySchedule.day} (${daySchedule.date}) missing topicDetails but has topics:`, daySchedule.topics);
+      }
+      
+      schedule.push(daySchedule);
     });
+    
+    console.log(`📋 Retrieved schedule with ${schedule.length} days for user ${userId}`);
 
     return {
       totalDays: schedule.length,
