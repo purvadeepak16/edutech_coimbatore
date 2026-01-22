@@ -197,12 +197,13 @@ export async function getTopicAssignmentsByDateRange(userId, startDate, endDate)
  */
 export async function getDailySchedule(userId) {
   try {
-    const assignmentsRef = db.collection('topicAssignments')
-      .where('userId', '==', userId);
+    const assignmentsRef = db.collection('topicAssignments');
+    const query = assignmentsRef.where('userId', '==', userId);
     
-    const snapshot = await assignmentsRef.get();
+    const snapshot = await query.get();
 
     if (snapshot.empty) {
+      console.log(`No schedule found for user ${userId}`);
       return null;
     }
 

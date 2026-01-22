@@ -46,7 +46,7 @@
 }
 
 .plan-task-item:hover {
-  (removed)
+  opacity: 0.8;
 }
 
 .task-check input[type='checkbox'] {
@@ -103,15 +103,13 @@
 }
 
 .more-tasks {
-}
-
-.more-tasks:hover {
   font-size: 0.85rem;
   color: #2D3E50;
   font-weight: 600;
   margin-top: 0.5rem;
   padding-top: 0.5rem;
   border-top: 1px solid #E8DCC4;
+}
 
 .subject-tasks {
   background: #FFFBF0;
@@ -147,5 +145,4 @@
   .plan-header h3 {
     font-size: 1.1rem;
   }
-}
 }

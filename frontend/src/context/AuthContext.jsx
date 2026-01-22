@@ -83,7 +83,8 @@ export function AuthProvider({ children }) {
         userData,
         signUp,
         login,
-        logout
+        logout,
+        loading
     };
 
     return (
