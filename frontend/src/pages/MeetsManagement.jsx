@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { getUpcomingMeets, getJoinRequests, acceptJoinRequest, rejectJoinRequest, createMeet, startMeet, endMeet, listMeets, getMeet } from '../services/mentorApi';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import GroupMeetPreview from '../components/GroupMeetPreview';
 import './MeetsManagement.css';
 
 const TABS = ['Upcoming Meets', 'Join Requests', 'Past Meets'];
@@ -13,7 +15,11 @@ export default function MeetsManagement() {
   const [joinRequests, setJoinRequests] = useState([]);
   const [showCreate, setShowCreate] = useState(false);
   const [form, setForm] = useState({ title: '', subject: '', topics: '', date: '', time: '', duration: 60, capacity: 10, approval: 'manual' });
+  const [isMeetOpen, setIsMeetOpen] = useState(false);
+  const [activeMeeting, setActiveMeeting] = useState(null);
+  const [meetError, setMeetError] = useState(null);
   const navigate = useNavigate();
+  const { currentUser, userData } = useAuth();
 
   useEffect(() => { loadMeets(); }, []);
 
@@ -80,19 +86,31 @@ export default function MeetsManagement() {
   };
 
   const handleStart = async (meetId) => {
+    setMeetError(null);
     try {
-      await startMeet(meetId);
-      // fetch meeting to obtain meetingUrl then navigate to unified route
-      const meetData = await getMeet(meetId);
-      const meetingUrl = meetData?.meeting?.meetingUrl || meetData?.meetingUrl || meetData?.url;
-      if (meetingUrl) {
-        const q = `?url=${encodeURIComponent(meetingUrl)}`;
-        navigate(`/active-session/${meetId}${q}`);
-      } else {
-        loadMeets();
-      }
+      if (!currentUser) throw new Error('Sign in to start meetings');
+      const token = await currentUser.getIdToken();
+      
+      // Use same API as student - /api/group-meet/start
+      // Pass meetId as groupId to reuse the same backend logic
+      const res = await fetch('http://localhost:5000/api/group-meet/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ groupId: meetId }),
+      });
+      
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || data?.error || 'Failed to start meeting');
+      
+      const meeting = data.meeting || data;
+      if (!meeting || !meeting.meetingUrl) throw new Error('Meeting URL not available');
+      
+      // Open GroupMeetPreview modal (same as student flow)
+      setActiveMeeting({ ...meeting, group: { name: selectedMeet?.title || 'Mentor Meet' } });
+      setIsMeetOpen(true);
     } catch (e) {
       console.error(e);
+      setMeetError(e.message || 'Failed to start meet');
       alert(e.message || 'Failed to start meet');
     }
   };
@@ -192,6 +210,17 @@ export default function MeetsManagement() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* GroupMeetPreview Modal - Same as student flow */}
+      {isMeetOpen && activeMeeting && (
+        <GroupMeetPreview
+          meeting={activeMeeting}
+          group={activeMeeting.group}
+          onClose={() => { setIsMeetOpen(false); setActiveMeeting(null); }}
+          currentUser={currentUser}
+          userData={userData}
+        />
       )}
     </div>
   );
