@@ -84,6 +84,7 @@ const AssessmentsSection = () => {
         const first = topics.length > 0 ? topics[0] : '';
         const domain = first.includes(':') ? first.split(':')[0].trim() : (first.trim() || 'General Knowledge');
 
+        // Templates for BASIC level - recall and understanding
         const templatesBasic = [
             ({d}) => ({
                 question: `What is ${d}?`,
@@ -141,6 +142,100 @@ const AssessmentsSection = () => {
             })
         ];
 
+        // Templates for ADVANCED level - application and analysis
+        const templatesAdvanced = [
+            ({d}) => ({
+                question: `If you were implementing a ${d} solution in a production environment, which factor would be MOST critical to consider first?`,
+                correct: `Scalability and performance optimization of ${d} algorithms`,
+                distractors: [
+                    `The color scheme of the user interface`,
+                    `The brand of the development computer`,
+                    `The location of the office`
+                ]
+            }),
+            ({d}) => ({
+                question: `A company needs to solve a problem using ${d}. They have limited data and tight deadlines. What approach would you recommend?`,
+                correct: `Use a lightweight ${d} model with transfer learning to leverage pre-trained knowledge`,
+                distractors: [
+                    `Wait for more data to arrive before starting`,
+                    `Use the most complex ${d} architecture regardless of constraints`,
+                    `Abandon ${d} and use random guessing`
+                ]
+            }),
+            ({d}) => ({
+                question: `When comparing two ${d} approaches for the same problem, which evaluation metric would provide the most comprehensive insight?`,
+                correct: `A combination of accuracy, precision, recall, and F1-score along with computational cost`,
+                distractors: [
+                    `Only the training time`,
+                    `The number of lines of code`,
+                    `The popularity of the method on social media`
+                ]
+            }),
+            ({d}) => ({
+                question: `You notice your ${d} model performs well on training data but poorly on new data. What is the most likely issue and solution?`,
+                correct: `Overfitting - implement regularization, cross-validation, or gather more diverse training data`,
+                distractors: [
+                    `The model is too simple - make it more complex`,
+                    `This is normal behavior and requires no action`,
+                    `The testing data must be corrupted`
+                ]
+            }),
+            ({d}) => ({
+                question: `In a multi-stage ${d} pipeline, which design principle would best ensure maintainability and debugging ease?`,
+                correct: `Modular design with clear interfaces, logging at each stage, and unit tests`,
+                distractors: [
+                    `Write all code in a single function for simplicity`,
+                    `Avoid documentation to save time`,
+                    `Hard-code all parameters for consistency`
+                ]
+            }),
+            ({d}) => ({
+                question: `A client asks you to explain how your ${d} solution makes decisions. What approach demonstrates both technical understanding and communication skill?`,
+                correct: `Use visualization techniques and simplified analogies while being transparent about limitations`,
+                distractors: [
+                    `Refuse to explain citing proprietary algorithms`,
+                    `Provide only mathematical equations without context`,
+                    `Tell them it's magic and they wouldn't understand`
+                ]
+            }),
+            ({d}) => ({
+                question: `Two ${d} models have similar accuracy but different computational requirements. How should you decide which to deploy?`,
+                correct: `Evaluate based on production constraints: latency requirements, available compute resources, and maintenance costs`,
+                distractors: [
+                    `Always choose the faster one regardless of accuracy`,
+                    `Deploy both and randomly choose between them`,
+                    `Choose based on which one has more parameters`
+                ]
+            }),
+            ({d}) => ({
+                question: `When integrating ${d} into an existing system, what consideration is often overlooked but critical?`,
+                correct: `Data quality, preprocessing pipelines, and continuous monitoring in production`,
+                distractors: [
+                    `The font used in documentation`,
+                    `The specific IDE the developers prefer`,
+                    `Whether the team likes ${d} or not`
+                ]
+            }),
+            ({d}) => ({
+                question: `Your ${d} system needs to handle concept drift over time. What strategy would be most effective?`,
+                correct: `Implement continuous learning with periodic retraining, monitoring for performance degradation, and version control`,
+                distractors: [
+                    `Train once and never update the model`,
+                    `Completely retrain from scratch daily regardless of performance`,
+                    `Ignore changes and hope the model adapts automatically`
+                ]
+            }),
+            ({d}) => ({
+                question: `Given limited computational resources, how would you optimize a ${d} workflow for better efficiency?`,
+                correct: `Profile the code, identify bottlenecks, use efficient data structures, and consider distributed computing for parallelizable tasks`,
+                distractors: [
+                    `Buy more computers without analyzing the problem`,
+                    `Remove all features to make it faster`,
+                    `Run the code multiple times hoping it gets faster`
+                ]
+            })
+        ];
+
         const out = [];
         for (let i = 0; i < count; i++) {
             if (level === 'scenario') {
@@ -157,8 +252,9 @@ const AssessmentsSection = () => {
                 continue;
             }
 
-            // Basic / Advanced use templates; advanced will be similar but marked higher
-            const tpl = templatesBasic[i % templatesBasic.length];
+            // Choose template based on level
+            const templates = level === 'advanced' ? templatesAdvanced : templatesBasic;
+            const tpl = templates[i % templates.length];
             const built = tpl({ d: domain });
             const options = shuffle([built.correct, ...built.distractors]).slice(0,4);
             const correctIndex = options.indexOf(built.correct);
@@ -210,22 +306,27 @@ const AssessmentsSection = () => {
         });
         const percent = totalMarks === 0 ? 0 : Math.round((scored / totalMarks) * 100);
 
-        // handle unlocking
+        // handle unlocking - Basic requires 60%+, Advanced requires 50%+
         if (runningExam === 'basic') {
-            if (percent >= 70) {
+            if (percent >= 60) {
                 setAdvancedUnlocked(true);
+                alert(`🎉 Basic Test Passed with ${percent}%! Advanced Test Unlocked.`);
                 // auto-start advanced
                 setTimeout(() => startTest('advanced'), 600);
+            } else {
+                alert(`Basic Test Score: ${percent}%. You need 60% or higher to unlock Advanced Test.`);
             }
         } else if (runningExam === 'advanced') {
             if (percent >= 50) {
                 setScenarioUnlocked(true);
+                alert(`🎉 Advanced Test Passed with ${percent}%! Scenario Test Unlocked.`);
                 setTimeout(() => startTest('scenario'), 600);
+            } else {
+                alert(`Advanced Test Score: ${percent}%. You need 50% or higher to unlock Scenario Test.`);
             }
+        } else {
+            alert(`You scored ${percent}% on the ${runningExam} test.`);
         }
-
-        // show simple result (could be extended to persist to backend)
-        alert(`You scored ${percent}% on the ${runningExam} test.`);
 
         // reset running exam if scenario finished or leave unlocked state
         if (runningExam === 'scenario') {
@@ -249,7 +350,7 @@ const AssessmentsSection = () => {
                     status="Available"
                     questions={10}
                     time="15 min"
-                    passScore="70%+"
+                    passScore="60%+"
                     color="var(--color-soft-teal)"
                     onStart={() => navigate('/assessment-test', { state: { level: 'basic', todaysTasks } })}
                 />
@@ -257,7 +358,10 @@ const AssessmentsSection = () => {
                     title="Advanced Test"
                     icon={Brain}
                     status={advancedUnlocked ? 'Available' : 'Locked'}
-                    requirement="Complete Basic 70%+"
+                    requirement="Complete Basic 60%+"
+                    questions={10}
+                    time="20 min"
+                    passScore="50%+"
                     progress={advancedUnlocked ? '1/1 ✓' : '0/1'}
                     color="var(--color-soft-yellow)"
                     isLocked={!advancedUnlocked}
