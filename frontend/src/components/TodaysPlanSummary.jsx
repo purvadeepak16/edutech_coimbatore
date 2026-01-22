@@ -147,7 +147,9 @@ function TodaysPlanSummary() {
       <div className="plan-tasks-list">
         {Object.entries(todaysTasks).map(([subject, tasks]) => (
           <div key={subject} className="subject-tasks">
-            <div className="subject-label">{subject}</div>
+            {subject && subject !== 'UNKNOWN SUBJECT' && subject !== 'Unknown Subject' && (
+              <div className="subject-label">{subject}</div>
+            )}
             {tasks.slice(0, 3).map((topic, index) => {
               const topicKey = `${subject}-${topic.id}`;
               return (

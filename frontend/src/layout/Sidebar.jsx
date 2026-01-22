@@ -89,18 +89,6 @@ const Sidebar = () => {
                                     <span>Syllabus</span>
                                 </Link>
                             </li>
-                            <li className={isActive('/study-plan') ? 'active' : ''}>
-                                <Link to="/study-plan">
-                                    <Calendar size={20} />
-                                    <span>Study Plan</span>
-                                </Link>
-                            </li>
-                            <li className={isActive('/learning-modes') ? 'active' : ''}>
-                                <Link to="/learning-modes">
-                                    <Brain size={20} />
-                                    <span>Learning Modes</span>
-                                </Link>
-                            </li>
                             <li className={isActive('/mindmap') ? 'active' : ''}>
                                 <Link to="/mindmap">
                                     <Network size={20} />
@@ -147,12 +135,6 @@ const Sidebar = () => {
                             <span>Text To Speech</span>
                         </Link>
                     </li>
-                    <li className={isActive('/text-to-podcast') ? 'active' : ''}>
-                        <Link to="/text-to-podcast">
-                            <Mic size={20} />
-                            <span>Text To Podcast</span>
-                        </Link>
-                    </li>
                     <li className={isActive('/parent-view') ? 'active' : ''}>
                         <Link to="/parent-view">
                             <UserCheck size={20} />
@@ -163,12 +145,6 @@ const Sidebar = () => {
                         <Link to="/gamification">
                             <Gamepad2 size={20} />
                             <span>Gamification</span>
-                        </Link>
-                    </li>
-                    <li className={isActive('/achievements') ? 'active' : ''}>
-                        <Link to="/achievements">
-                            <Trophy size={20} />
-                            <span>Achievements</span>
                         </Link>
                     </li>
                     <li className={isActive('/groups') ? 'active' : ''}>
