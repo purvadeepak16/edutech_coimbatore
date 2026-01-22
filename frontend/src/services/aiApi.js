@@ -10,7 +10,9 @@ export const askOpenRouter = async (prompt) => {
   const data = await response.json();
   
   if (!response.ok) {
-    throw new Error(data.error || 'Failed to get AI response');
+    // Extract meaningful error message
+    const errorMsg = data.error || data.message || 'Failed to get AI response';
+    throw new Error(errorMsg);
   }
   
   return data;

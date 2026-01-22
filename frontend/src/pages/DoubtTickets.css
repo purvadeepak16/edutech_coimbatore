@@ -1,0 +1,35 @@
+.doubt-page{display:flex;flex-direction:column;padding:20px}
+.doubt-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.tabs{display:flex;gap:8px}
+.tab-btn{padding:8px 12px;border:1px solid var(--color-navy);background:transparent;border-radius:6px;cursor:pointer}
+.tab-btn.active{background:var(--color-soft-teal);color:var(--color-navy);box-shadow:3px 3px 0 rgba(0,0,0,0.06);}
+.doubt-body{display:flex;gap:16px}
+.ticket-list{flex:0 0 380px;background:var(--color-cream);padding:12px;border-radius:8px;border:2px solid var(--color-navy);max-height:72vh;overflow:auto}
+.ticket-row{display:flex;align-items:center;justify-content:space-between;padding:10px;border-radius:6px;border-bottom:1px dashed rgba(0,0,0,0.04);cursor:pointer}
+.ticket-row.selected{background:rgba(45,62,80,0.04)}
+.ticket-left{flex:1}
+.student-name{font-weight:600}
+.subject-topic{font-size:0.9rem;color:var(--color-gray-text)}
+.ticket-right{width:110px;text-align:right}
+.submitted{font-size:0.85rem;color:var(--color-gray-text)}
+.priority{width:10px;height:10px;border-radius:50%;display:inline-block;margin-left:8px}
+.priority.high{background:#f97316}
+.priority.medium{background:#f59e0b}
+.priority.low{background:#9ca3af}
+.ticket-actions{display:flex;gap:6px;align-items:center;margin-left:10px}
+.btn{padding:8px 12px;border-radius:6px;background:var(--color-navy);color:white;border:none;cursor:pointer}
+.btn.ghost{background:transparent;border:1px solid rgba(45,62,80,0.12);color:var(--color-navy)}
+.btn.small{padding:6px 8px;font-size:0.85rem}
+.muted{color:var(--color-gray-text);padding:10px}
+.ticket-detail{flex:1;background:white;padding:14px;border-radius:8px;border:2px solid var(--color-navy);max-height:72vh;overflow:auto}
+.pinned{margin-bottom:12px}
+.pinned-header{font-weight:700;margin-bottom:6px}
+.pinned-body{background:rgba(205,239,246,0.08);padding:10px;border-radius:6px}
+.meta{font-size:0.85rem;color:var(--color-gray-text);margin-top:8px}
+.replies-header{font-weight:700;margin-top:6px;margin-bottom:8px}
+.reply{padding:8px;border-radius:6px;border-left:3px solid rgba(45,62,80,0.06);margin-bottom:8px}
+.reply-meta{font-size:0.8rem;color:var(--color-gray-text);margin-bottom:6px}
+.reply-text{white-space:pre-wrap}
+.reply-input{width:100%;min-height:90px;padding:10px;border-radius:6px;border:1px solid rgba(0,0,0,0.06);margin-top:8px}
+.reply-controls{display:flex;gap:8px;margin-top:8px}
+.small{font-size:0.85rem}

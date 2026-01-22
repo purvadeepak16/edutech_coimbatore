@@ -142,7 +142,8 @@
     padding: 48px;
     border-radius: 32px;
     box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2);
-    animation: cardSlideIn 0.8s ease-out 0.2s backwards, float 6s ease-in-out infinite;
+    /* disabled float animation for signup dialog */
+    animation: cardSlideIn 0.8s ease-out 0.2s backwards;
     position: relative;
     z-index: 10;
 }
@@ -290,37 +291,38 @@
 /* Floating Graphic Assets */
 .floating-asset {
     position: absolute;
-    background-color: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    /* lighter sky-blue pastel background */
+    background-color: rgba(205, 239, 246, 0.12);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(205, 239, 246, 0.28);
     padding: 12px 24px;
     border-radius: 50px;
-    color: var(--color-white);
+    color: var(--color-navy);
     font-weight: 600;
     display: flex;
     align-items: center;
     gap: 8px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
     z-index: 5;
     animation: floatAsset 6s ease-in-out infinite;
 }
 
 .asset-1 {
     top: 15%;
-    right: 18%;
+    right: 30%;
     /* Positioning relative to hero section/container */
     animation-delay: 0s;
 }
 
 .asset-2 {
     bottom: 25%;
-    right: 10%;
+    right: 28%;
     animation-delay: 2s;
 }
 
 .asset-3 {
     top: 40%;
-    right: 5%;
+    right: 40%;
     animation-delay: 4s;
 }
 

@@ -1,0 +1,52 @@
+/* Simple styles for MentorsPage */
+.mentors-page {
+  padding: 20px;
+}
+
+.mentors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.mentor-card {
+  padding: 12px;
+  border: 1px solid var(--color-gray-light, #e6e6e6);
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--color-white, #fff);
+}
+
+.mentor-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mentor-name {
+  font-weight: 700;
+  color: var(--color-navy, #0f172a);
+}
+
+.mentor-specs {
+  font-size: 13px;
+  color: var(--color-gray-text, #6b7280);
+}
+
+.btn-connect {
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--color-teal, #0ea5a4);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-connect[disabled] {
+  background: #c7c7c7;
+  cursor: default;
+}

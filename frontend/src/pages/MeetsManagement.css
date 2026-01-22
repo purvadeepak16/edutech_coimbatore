@@ -1,0 +1,21 @@
+.meets-page{padding:20px}
+.meets-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.meets-tabs{display:flex;gap:8px;margin-bottom:12px}
+.meets-tabs button{padding:8px 12px;border-radius:6px;border:1px solid var(--color-navy);background:transparent}
+.meets-tabs button.active{background:var(--color-soft-teal);color:var(--color-navy)}
+.meets-body{display:flex;gap:16px}
+.meets-list{flex:0 0 360px;background:var(--color-cream);padding:12px;border-radius:8px;border:2px solid var(--color-navy);max-height:70vh;overflow:auto}
+.meet-card{padding:10px;border-radius:6px;border-bottom:1px dashed rgba(0,0,0,0.04);cursor:pointer}
+.meet-card.selected{background:rgba(45,62,80,0.04)}
+.meet-title{font-weight:700}
+.meet-meta{font-size:0.9rem;color:var(--color-gray-text)}
+.meets-detail{flex:1;background:white;padding:14px;border-radius:8px;border:2px solid var(--color-navy);max-height:70vh;overflow:auto}
+.detail-row{margin-bottom:8px}
+.join-requests{margin-top:12px}
+.jr{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:6px;border-left:3px solid rgba(0,0,0,0.04);margin-bottom:8px}
+.jr-actions{display:flex;gap:8px}
+.meet-controls{margin-top:12px;display:flex;gap:8px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center}
+.modal-inner{background:white;padding:16px;border-radius:8px;width:420px;display:flex;flex-direction:column;gap:8px;border:2px solid var(--color-navy)}
+.modal-inner input,.modal-inner select{padding:8px;border-radius:6px;border:1px solid rgba(0,0,0,0.06)}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end}

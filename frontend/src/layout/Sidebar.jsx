@@ -31,6 +31,8 @@ const Sidebar = () => {
         return location.pathname === path;
     };
 
+    const isMentor = userData?.userRole === 'Mentor';
+
     async function handleLogout() {
         setError('');
         try {
@@ -57,30 +59,56 @@ const Sidebar = () => {
                             <span>Dashboard</span>
                         </Link>
                     </li>
-                    <li className={isActive('/syllabus') ? 'active' : ''}>
-                        <Link to="/syllabus">
-                            <BookOpen size={20} />
-                            <span>Syllabus</span>
-                        </Link>
-                    </li>
-                    <li className={isActive('/study-plan') ? 'active' : ''}>
-                        <Link to="/study-plan">
-                            <Calendar size={20} />
-                            <span>Study Plan</span>
-                        </Link>
-                    </li>
-                    <li className={isActive('/learning-modes') ? 'active' : ''}>
-                        <Link to="/learning-modes">
-                            <Brain size={20} />
-                            <span>Learning Modes</span>
-                        </Link>
-                    </li>
-                    <li className={isActive('/mindmap') ? 'active' : ''}>
-                        <Link to="/mindmap">
-                            <Network size={20} />
-                            <span>Mind Map</span>
-                        </Link>
-                    </li>
+                    {userData?.userRole === 'Mentor' && (
+                        <>
+                            <li className={isActive('/mentor/dashboard') ? 'active' : ''}>
+                                <Link to="/mentor/dashboard">
+                                    <LayoutDashboard size={20} />
+                                    <span>Mentor Dashboard</span>
+                                </Link>
+                            </li>
+                            <li className={isActive('/mentor/tickets') ? 'active' : ''}>
+                                <Link to="/mentor/tickets">
+                                    <ClipboardCheck size={20} />
+                                    <span>Tickets</span>
+                                </Link>
+                            </li>
+                            <li className={isActive('/mentor/meets') ? 'active' : ''}>
+                                <Link to="/mentor/meets">
+                                    <Calendar size={20} />
+                                    <span>Meets</span>
+                                </Link>
+                            </li>
+                        </>
+                    )}
+                    {!isMentor && (
+                        <>
+                            <li className={isActive('/syllabus') ? 'active' : ''}>
+                                <Link to="/syllabus">
+                                    <BookOpen size={20} />
+                                    <span>Syllabus</span>
+                                </Link>
+                            </li>
+                            <li className={isActive('/study-plan') ? 'active' : ''}>
+                                <Link to="/study-plan">
+                                    <Calendar size={20} />
+                                    <span>Study Plan</span>
+                                </Link>
+                            </li>
+                            <li className={isActive('/learning-modes') ? 'active' : ''}>
+                                <Link to="/learning-modes">
+                                    <Brain size={20} />
+                                    <span>Learning Modes</span>
+                                </Link>
+                            </li>
+                            <li className={isActive('/mindmap') ? 'active' : ''}>
+                                <Link to="/mindmap">
+                                    <Network size={20} />
+                                    <span>Mind Map</span>
+                                </Link>
+                            </li>
+                        </>
+                    )}
                     <li className={isActive('/active-session') ? 'active' : ''}>
                         <Link to="/active-session">
                             <Target size={20} />
@@ -93,12 +121,14 @@ const Sidebar = () => {
                             <span>Ask AI</span>
                         </Link>
                     </li>
-                    <li className={isActive('/mastery-score') ? 'active' : ''}>
-                        <Link to="/mastery-score">
-                            <Target size={20} />
-                            <span>Mastery Score</span>
-                        </Link>
-                    </li>
+                    {!isMentor && (
+                        <li className={isActive('/mastery-score') ? 'active' : ''}>
+                            <Link to="/mastery-score">
+                                <Target size={20} />
+                                <span>Mastery Score</span>
+                            </Link>
+                        </li>
+                    )}
                     <li className={isActive('/assessments') ? 'active' : ''}>
                         <Link to="/assessments">
                             <ClipboardCheck size={20} />

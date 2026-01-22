@@ -62,10 +62,27 @@ Make the conversation sound natural, educational, and suitable for students.`;
     if (!openrouterResponse.ok) {
       const errorData = await openrouterResponse.json();
       console.error('OpenRouter error:', errorData);
-      return res.status(500).json({ error: 'OpenRouter enrichment failed', details: errorData });
+      const errorMsg = errorData?.error?.message || 'OpenRouter enrichment failed';
+      return res.status(openrouterResponse.status).json({ 
+        error: errorMsg,
+        code: errorData?.error?.code,
+        details: errorData 
+      });
     }
 
     const openrouterData = await openrouterResponse.json();
+    
+    // Check for API errors even with 200 status
+    if (openrouterData?.error) {
+      console.error('OpenRouter API error:', openrouterData.error);
+      const errorMsg = openrouterData.error.message || 'OpenRouter API error';
+      return res.status(402).json({ 
+        error: errorMsg,
+        code: openrouterData.error.code,
+        details: openrouterData.error 
+      });
+    }
+    
     const enrichedContent = openrouterData.choices?.[0]?.message?.content;
 
     if (!enrichedContent) {

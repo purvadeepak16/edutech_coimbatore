@@ -15,6 +15,8 @@ import assessmentsRoutes from './routes/assessments.routes.js';
 import syllabusRoutes from './routes/syllabus.js';
 
 import ttsRoutes from "./routes/tts.routes.js";
+import mentorRequestsRoutes from './routes/mentorRequests.routes.js';
+import mentorRoutes from './routes/mentor.routes.js';
 import dns from "dns";
 dns.setDefaultResultOrder("ipv4first");
 
@@ -79,6 +81,12 @@ app.use('/api/syllabus', syllabusRoutes);
 
 
 app.use("/api/tts", ttsRoutes);
+
+// Mentor routes (tickets, meets, dashboard)
+app.use('/api/mentor', mentorRoutes);
+
+// Mentor-Student connection requests
+app.use('/api', mentorRequestsRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {

@@ -43,6 +43,16 @@ router.post('/ask', async (req, res) => {
 
     const json = await r.json();
 
+    // Check for API errors (insufficient credits, etc.)
+    if (json?.error) {
+      console.error('OpenRouter API error:', json.error);
+      return res.status(402).json({ 
+        error: json.error.message || 'OpenRouter API error',
+        code: json.error.code,
+        raw: json 
+      });
+    }
+
     // Try to extract a reasonable assistant text from common response shapes
     let assistantText = '';
     if (json?.choices && json.choices[0]) {

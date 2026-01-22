@@ -14,7 +14,11 @@ const LandingPage = () => {
     const [loading, setLoading] = useState(false);
     const [gender, setGender] = useState('');
     const [learningPreference, setLearningPreference] = useState('');
-   const [preferredTimeSlots, setPreferredTimeSlots] = useState('');
+    // preferred time ranges stored as array of {start,end} in 24-hour format
+    const [preferredTimeRanges, setPreferredTimeRanges] = useState([{ start: '18:00', end: '19:00' }]);
+    // Mentor-specific: array of { subject: string, levels: string[] }
+    const [mentorSpecializations, setMentorSpecializations] = useState([{ subject: '', levels: [] }]);
+    const [signupStep, setSignupStep] = useState(1);
 
 
 
@@ -23,23 +27,19 @@ const LandingPage = () => {
 async function handleSubmit(e) {
     e.preventDefault();
 
-    const timeSlotsArray = preferredTimeSlots
-        .split(',')
-        .map(slot => slot.trim())
-        .filter(slot => slot.length > 0);
+    const timeSlotsArray = (preferredTimeRanges || [])
+        .map(r => (r && r.start ? `${r.start}-${r.end || r.start}` : null))
+        .filter(Boolean);
 
-    if (
-        !email ||
-        !password ||
-        (!isLogin && (
-            !username ||
-            !role ||
-            !gender ||
-            !learningPreference ||
-            timeSlotsArray.length === 0
-        ))
-    ) {
-        return setError('Please fill in all fields');
+    if (!email || !password) return setError('Please provide email and password');
+
+    if (!isLogin) {
+        if (!username || !role || !gender) return setError('Please fill in all required fields');
+        if (role === 'Student' && (!learningPreference || timeSlotsArray.length === 0)) return setError('Please fill in student preferences and time slots');
+        if (role === 'Mentor') {
+            const hasSpec = (mentorSpecializations || []).some(s => (s.subject && s.subject.trim()) || (s.levels && s.levels.length > 0));
+            if (!hasSpec) return setError('Please provide at least one specialization with subject or level');
+        }
     }
 
     try {
@@ -56,7 +56,8 @@ async function handleSubmit(e) {
                 role,
                 gender,
                 learningPreference,
-                timeSlotsArray
+                timeSlotsArray,
+                mentorSpecializations
             );
         }
     } catch (err) {
@@ -103,17 +104,9 @@ async function handleSubmit(e) {
                     </button>
 
                     {/* Decorative Floating Assets */}
-                    <div className="floating-asset asset-1">
-                        <BookOpen size={20} />
-                        <span>Books</span>
-                    </div>
                     <div className="floating-asset asset-2">
                         <Users size={20} />
                         <span>Learn</span>
-                    </div>
-                    <div className="floating-asset asset-3">
-                        <ArrowRight size={20} />
-                        <span>Listen</span>
                     </div>
                 </div>
 
@@ -125,122 +118,222 @@ async function handleSubmit(e) {
 
                     <form className="auth-form" onSubmit={handleSubmit}>
                         {error && <div className="auth-error">{error}</div>}
-                        {!isLogin && (
-                            <div className="input-group">
-                                <label>Username</label>
-                                <input
-                                    type="text"
-                                    placeholder="Enter your name"
-                                    value={username}
-                                    onChange={(e) => setUsername(e.target.value)}
-                                    required
-                                />
+                        {!isLogin && signupStep === 1 && (
+                            <div>
+                                <div className="input-group">
+                                    <label>Username</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Enter your name"
+                                        value={username}
+                                        onChange={(e) => setUsername(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                                <div className="input-group">
+                                    <label>I am a...</label>
+                                    <select
+                                        value={role}
+                                        onChange={(e) => setRole(e.target.value)}
+                                        className="auth-select"
+                                        required
+                                    >
+                                        <option value="Student">Student</option>
+                                        <option value="Mentor">Mentor</option>
+                                    </select>
+                                </div>
+
+                                <div style={{marginTop:12}}>
+                                    <button type="button" className="auth-submit-btn" onClick={() => setSignupStep(2)}>Next</button>
+                                </div>
                             </div>
                         )}
-                        {!isLogin && (
-                            <div className="input-group">
-                                <label>I am a...</label>
-                                <select
-                                    value={role}
-                                    onChange={(e) => setRole(e.target.value)}
-                                    className="auth-select"
-                                    required
-                                >
-                                    <option value="Student">Student</option>
-                                    <option value="Mentor">Mentor</option>
-                                </select>
+
+                        {!isLogin && signupStep === 2 && (
+                            <div>
+                                <div className="input-group">
+                                    <label>Gender</label>
+                                    <select
+                                        value={gender}
+                                        onChange={(e) => setGender(e.target.value)}
+                                        className="auth-select"
+                                        required
+                                    >
+                                        <option value="">Select gender</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+
+                                {role === 'Student' && (
+                                    <>
+                                        <div className="input-group">
+                                            <label>How do you understand concepts?</label>
+                                            <select
+                                                value={learningPreference}
+                                                onChange={(e) => setLearningPreference(e.target.value)}
+                                                className="auth-select"
+                                                required
+                                            >
+                                                <option value="">Select preference</option>
+                                                <option value="Reading Notes">By reading notes</option>
+                                                <option value="Listening Podcasts">By listening to podcasts</option>
+                                                <option value="Visual Mind Maps">By looking at visual flow charts / mind maps</option>
+                                            </select>
+                                        </div>
+
+                                        <div className="input-group">
+                                            <label>Preferred Time Slots (24-hour)</label>
+                                            <div>
+                                                {(preferredTimeRanges || []).map((r, idx) => (
+                                                    <div key={idx} style={{display:'flex',gap:8,alignItems:'center',marginBottom:8}}>
+                                                        <input type="time" value={r.start} onChange={e=>{
+                                                            const copy = [...preferredTimeRanges]; copy[idx] = {...copy[idx], start: e.target.value}; setPreferredTimeRanges(copy);
+                                                        }} />
+                                                        <span>to</span>
+                                                        <input type="time" value={r.end} onChange={e=>{
+                                                            const copy = [...preferredTimeRanges]; copy[idx] = {...copy[idx], end: e.target.value}; setPreferredTimeRanges(copy);
+                                                        }} />
+                                                        <button type="button" onClick={()=>{
+                                                            const copy = preferredTimeRanges.filter((_,i)=>i!==idx); setPreferredTimeRanges(copy.length?copy:[{start:'18:00',end:'19:00'}]);
+                                                        }}>Remove</button>
+                                                    </div>
+                                                ))}
+                                                <div><button type="button" onClick={()=>setPreferredTimeRanges([...preferredTimeRanges,{start:'18:00',end:'19:00'}])}>Add Slot</button></div>
+                                                <small style={{ color: '#777' }}>Use 24-hour time; add multiple slots if needed</small>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+
+                                {role === 'Mentor' && (
+                                    <>
+                                        <div className="input-group">
+                                            <label>Specializations</label>
+                                            <div style={{display:'flex',flexDirection:'column',gap:8}}>
+                                                {mentorSpecializations.map((spec, sIdx) => (
+                                                    <div key={sIdx} style={{border:'1px solid #eee',padding:8,borderRadius:6}}>
+                                                        <div style={{display:'flex',gap:8,alignItems:'center'}}>
+                                                            <input
+                                                                placeholder="Subject (e.g. Math)"
+                                                                value={spec.subject}
+                                                                onChange={e=>{
+                                                                    const copy = [...mentorSpecializations]; copy[sIdx] = {...copy[sIdx], subject: e.target.value}; setMentorSpecializations(copy);
+                                                                }}
+                                                            />
+                                                            <button type="button" onClick={()=>{
+                                                                const copy = mentorSpecializations.filter((_,i)=>i!==sIdx); setMentorSpecializations(copy.length?copy:[{subject:'',levels:[]}]);
+                                                            }}>Remove</button>
+                                                        </div>
+                                                        <div style={{marginTop:8}}>
+                                                            <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+                                                                {['School','UG','Exam'].map(l=> (
+                                                                    <label key={l} style={{display:'inline-flex',alignItems:'center',gap:6}}>
+                                                                        <input type="checkbox" checked={(spec.levels||[]).includes(l)} onChange={()=>{
+                                                                            const copy = [...mentorSpecializations];
+                                                                            const levels = new Set(copy[sIdx].levels || []);
+                                                                            if (levels.has(l)) levels.delete(l); else levels.add(l);
+                                                                            copy[sIdx] = {...copy[sIdx], levels: Array.from(levels)};
+                                                                            setMentorSpecializations(copy);
+                                                                        }} /> {l}
+                                                                    </label>
+                                                                ))}
+                                                                <input placeholder="Add custom level (press Enter)" onKeyDown={e=>{ if(e.key==='Enter'){ e.preventDefault(); const v=e.target.value.trim(); if(v){ const copy = [...mentorSpecializations]; const levels = new Set(copy[sIdx].levels || []); levels.add(v); copy[sIdx] = {...copy[sIdx], levels: Array.from(levels)}; setMentorSpecializations(copy); e.target.value=''; } } }} />
+                                                            </div>
+                                                            <small style={{color:'#777'}}>Choose level(s) for this subject</small>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                                <div>
+                                                    <button type="button" onClick={()=>setMentorSpecializations(prev=>[...prev,{subject:'',levels:[]}])}>Add Subject</button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="input-group">
+                                            <label>Availability Slots (24-hour)</label>
+                                            <div>
+                                                {(preferredTimeRanges || []).map((r, idx) => (
+                                                    <div key={idx} style={{display:'flex',gap:8,alignItems:'center',marginBottom:8}}>
+                                                        <input type="time" value={r.start} onChange={e=>{
+                                                            const copy = [...preferredTimeRanges]; copy[idx] = {...copy[idx], start: e.target.value}; setPreferredTimeRanges(copy);
+                                                        }} />
+                                                        <span>to</span>
+                                                        <input type="time" value={r.end} onChange={e=>{
+                                                            const copy = [...preferredTimeRanges]; copy[idx] = {...copy[idx], end: e.target.value}; setPreferredTimeRanges(copy);
+                                                        }} />
+                                                        <button type="button" onClick={()=>{
+                                                            const copy = preferredTimeRanges.filter((_,i)=>i!==idx); setPreferredTimeRanges(copy.length?copy:[{start:'18:00',end:'19:00'}]);
+                                                        }}>Remove</button>
+                                                    </div>
+                                                ))}
+                                                <div><button type="button" onClick={()=>setPreferredTimeRanges([...preferredTimeRanges,{start:'18:00',end:'19:00'}])}>Add Slot</button></div>
+                                                <small style={{ color: '#777' }}>You can change availability later</small>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+
+                                {/* Back button relocated to just above Sign Up button for better UX */}
                             </div>
                         )}
-                        {!isLogin && (
-    <div className="input-group">
-        <label>Gender</label>
-        <select
-            value={gender}
-            onChange={(e) => setGender(e.target.value)}
-            className="auth-select"
-            required
-        >
-            <option value="">Select gender</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-            <option value="Other">Other</option>
-        </select>
-    </div>
-)}
-
-{!isLogin && (
-    <div className="input-group">
-        <label>How do you understand concepts?</label>
-        <select
-            value={learningPreference}
-            onChange={(e) => setLearningPreference(e.target.value)}
-            className="auth-select"
-            required
-        >
-            <option value="">Select preference</option>
-            <option value="Reading Notes">By reading notes</option>
-            <option value="Listening Podcasts">By listening to podcasts</option>
-            <option value="Visual Mind Maps">By looking at visual flow charts / mind maps</option>
-        </select>
-    </div>
-)}
-
-{!isLogin && (
-    <div className="input-group">
-        <label>Preferred Time Slots</label>
-        <input
-            type="text"
-            placeholder="e.g. 10:00 AM – 11:00 AM, 6:00 PM – 7:00 PM"
-            value={preferredTimeSlots}
-            onChange={(e) => setPreferredTimeSlots(e.target.value)}
-            required
-        />
-        <small style={{ color: '#777' }}>
-            Separate multiple time slots using commas
-        </small>
-    </div>
-)}
+                        {/* Duplicate blocks removed; signup step fields are above */}
 
 
 
-                        <div className="input-group">
-                            <label>Email Address</label>
-                            <input
-                                type="email"
-                                placeholder="monark@studysync.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                            />
-                        </div>
-                        <div className="input-group">
-                            <label>Password</label>
-                            <input
-                                type="password"
-                                placeholder="••••••••"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                            />
-                        </div>
+                        {(isLogin || (!isLogin && signupStep === 2)) && (
+                            <>
+                                <div className="input-group">
+                                    <label>Email Address</label>
+                                    <input
+                                        type="email"
+                                        placeholder="monark@studysync.com"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        required
+                                        style={{ transition: 'none' }}
+                                    />
+                                </div>
+                                <div className="input-group">
+                                    <label>Password</label>
+                                    <input
+                                        type="password"
+                                        placeholder="••••••••"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        required
+                                        style={{ transition: 'none' }}
+                                    />
+                                </div>
 
-                        <button className="auth-submit-btn" type="submit" disabled={loading}>
-                            {loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Sign Up')}
-                        </button>
+                                {/* Back button moved underneath Password field when on Step 2 */}
+                                {!isLogin && signupStep === 2 && (
+                                    <div style={{display:'flex',gap:8, marginTop:8}}>
+                                        <button type="button" className="auth-submit-btn" onClick={()=>setSignupStep(1)}>Back</button>
+                                    </div>
+                                )}
 
-                        <div className="auth-footer">
-                            {isLogin ? "Don't have an account? " : "Already have an account? "}
-                            <button
-                                type="button"
-                                className="link-btn"
-                                onClick={() => {
-                                    setIsLogin(!isLogin);
-                                    setError('');
-                                }}
-                            >
-                                {isLogin ? 'Sign Up' : 'Log In'}
-                            </button>
-                        </div>
+                                <button className="auth-submit-btn" type="submit" disabled={loading}>
+                                    {loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Sign Up')}
+                                </button>
+
+                                <div className="auth-footer">
+                                    {isLogin ? "Don't have an account? " : "Already have an account? "}
+                                    <button
+                                        type="button"
+                                        className="link-btn"
+                                        onClick={() => {
+                                            setIsLogin(!isLogin);
+                                            setError('');
+                                            setSignupStep(1);
+                                        }}
+                                    >
+                                        {isLogin ? 'Sign Up' : 'Log In'}
+                                    </button>
+                                </div>
+                            </>
+                        )}
                     </form>
                 </div>
             </div>

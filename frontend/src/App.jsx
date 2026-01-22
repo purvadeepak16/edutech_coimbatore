@@ -26,45 +26,69 @@ import ZombieGame from './pages/games/ZombieGame';
 import MemoryCardGame from './pages/games/MemoryCardGame';
 import WhackAMoleGame from './pages/games/WhackAMoleGame';
 import VisualMindMapPage from './pages/VisualMindMapPage';
-
+import MentorDashboard from './pages/MentorDashboard';
+import MentorsPage from './pages/MentorsPage';
+import DoubtTickets from './pages/DoubtTickets';
+import MeetsManagement from './pages/MeetsManagement';
 import './App.css';
 import './pages/PageStyles.css';
 
 function AppContent() {
-  const { currentUser } = useAuth();
+  const { currentUser ,userData } = useAuth();
 
   if (!currentUser) {
     return <LandingPage />;
   }
-
+// Role-based routing: Mentors see different dashboard
+  const isMentor = userData?.userRole === 'Mentor';
+  const defaultRoute = isMentor ? '/mentor/dashboard' : '/dashboard';
   return (
     <MainLayout>
       <Routes>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/syllabus" element={<SyllabusPage />} />
-        <Route path="/study-plan" element={<DashboardPage />} />
-        <Route path="/learning-modes" element={<DashboardPage />} />
-        <Route path="/mindmap" element={<MindMapPage />} />
-        <Route path="/visual-map" element={<VisualMindMapPage />} />
-        <Route path="/active-session" element={<DashboardPage />} />
-        <Route path="/ask-ai" element={<AskAIPage />} />
-        <Route path="/study-reader" element={<StudyReaderPage />} />
-        <Route path="/mastery-score" element={<MasteryScorePage />} />
-        <Route path="/assessments" element={<AssessmentsPage />} />
-        <Route path="/assessment-test" element={<AssessmentTestPage />} />
-        <Route path="/schedule" element={<SchedulePage />} />
-        <Route path="/text-to-speech" element={<TextToSpeechPage />} />
-        <Route path="/text-to-podcast" element={<TextToPodcastPage />} />
-        <Route path="/parent-view" element={<ParentViewPage />} />
-        <Route path="/gamification" element={<GamificationPage />} />
-        <Route path="/zombie-survival" element={<ZombieGame />} />
-        <Route path="/memory-game" element={<MemoryCardGame />} />
-        <Route path="/whack-a-mole" element={<WhackAMoleGame />} />
-        <Route path="/achievements" element={<AchievementsPage />} />
-        <Route path="/groups" element={<StudyGroupsPage />} />
-        <Route path="/exam-countdown" element={<ExamCountdownPage />} />
-        <Route path="/peacemode" element={<PeaceModePage />} />
+        <Route path="/" element={<Navigate to={defaultRoute} replace />} />
+        
+        {/* Mentor-only routes (protected by role guard) */}
+        {isMentor && (
+          <>
+            <Route path="/mentor/dashboard" element={<MentorDashboard />} />
+            <Route path="/mentor/tickets" element={<DoubtTickets />} />
+            <Route path="/mentor/meets" element={<MeetsManagement />} />
+          </>
+        )}
+
+        {/* Student-only routes (protected by role guard) */}
+        {!isMentor && (
+          <>
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/mentors" element={<MentorsPage />} />
+            <Route path="/syllabus" element={<SyllabusPage />} />
+            <Route path="/study-plan" element={<DashboardPage />} />
+            <Route path="/learning-modes" element={<DashboardPage />} />
+            <Route path="/mindmap" element={<MindMapPage />} />
+            <Route path="/visual-map" element={<VisualMindMapPage />} />
+            <Route path="/active-session" element={<DashboardPage />} />
+            <Route path="/ask-ai" element={<AskAIPage />} />
+            <Route path="/study-reader" element={<StudyReaderPage />} />
+            <Route path="/mastery-score" element={<MasteryScorePage />} />
+            <Route path="/assessments" element={<AssessmentsPage />} />
+            <Route path="/assessment-test" element={<AssessmentTestPage />} />
+            <Route path="/schedule" element={<SchedulePage />} />
+            <Route path="/text-to-speech" element={<TextToSpeechPage />} />
+            <Route path="/text-to-podcast" element={<TextToPodcastPage />} />
+            <Route path="/parent-view" element={<ParentViewPage />} />
+            <Route path="/gamification" element={<GamificationPage />} />
+            <Route path="/zombie-survival" element={<ZombieGame />} />
+            <Route path="/memory-game" element={<MemoryCardGame />} />
+            <Route path="/whack-a-mole" element={<WhackAMoleGame />} />
+            <Route path="/achievements" element={<AchievementsPage />} />
+            <Route path="/groups" element={<StudyGroupsPage />} />
+            <Route path="/exam-countdown" element={<ExamCountdownPage />} />
+            <Route path="/peacemode" element={<PeaceModePage />} />
+          </>
+        )}
+
+        {/* Catch-all: redirect unauthorized access back to default route */}
+        <Route path="*" element={<Navigate to={defaultRoute} replace />} />
       </Routes>
     </MainLayout>
   );

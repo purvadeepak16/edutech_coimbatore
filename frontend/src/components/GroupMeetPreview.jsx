@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import './GroupMeetPreview.css';
 
-export default function GroupMeetPreview({ meeting, group, onClose, currentUser }) {
+export default function GroupMeetPreview({ meeting, group, onClose, currentUser, userData }) {
   if (!meeting) return null;
   const { meetingUrl } = meeting;
   const iframeRef = useRef(null);
@@ -30,6 +30,34 @@ export default function GroupMeetPreview({ meeting, group, onClose, currentUser 
         if (!mounted) return;
         const displayName = (currentUser && (currentUser.displayName || currentUser.email)) || 'Guest';
         const email = (currentUser && currentUser.email) || '';
+        const isMentor = (userData && (userData.userRole === 'Mentor' || userData.role === 'mentor')) || (currentUser && (currentUser.role === 'mentor' || currentUser.isMentor));
+
+        // Log mount for debugging role parity
+        console.log('GroupMeetPreview mount — isMentor:', !!isMentor, 'room:', room);
+
+        // Role-based config: mentors get moderator-like toolbar and options; students get participant defaults
+        const baseConfig = {
+          startWithAudioMuted: false,
+          startWithVideoMuted: false,
+          prejoinPageEnabled: false,
+          enableWelcomePage: false,
+          // keep conference starting behavior flexible
+          requireModeratorToStart: false,
+        };
+
+        const mentorInterface = {
+          SHOW_JITSI_WATERMARK: false,
+          SHOW_BRAND_WATERMARK: false,
+          TOOLBAR_BUTTONS: [
+            'microphone', 'camera', 'desktop', 'fullscreen', 'fodeviceselection', 'hangup', 'chat', 'recording', 'etherpad',
+            'sharedvideo', 'settings', 'raisehand', 'videoquality', 'filmstrip', 'invite', 'participantlist', 'mute-everyone', 'kick-out', 'security'
+          ]
+        };
+
+        const studentInterface = {
+          SHOW_JITSI_WATERMARK: false,
+          SHOW_BRAND_WATERMARK: false,
+        };
 
         const options = {
           roomName: room,
@@ -37,22 +65,8 @@ export default function GroupMeetPreview({ meeting, group, onClose, currentUser 
           width: '100%',
           height: '100%',
           userInfo: { displayName, email },
-          configOverwrite: {
-            startWithAudioMuted: false,
-            startWithVideoMuted: false,
-            prejoinPageEnabled: false,
-            enableWelcomePage: false,
-            // ensure conference starts even without moderators
-            requireModeratorToStart: false,
-            // try to disable lobby/waiting room behavior
-            disableLobby: true,
-            disableModeratorIndicator: true,
-          },
-          interfaceConfigOverwrite: {
-            // hide welcome/brand elements that can interfere with auto-join
-            SHOW_JITSI_WATERMARK: false,
-            SHOW_BRAND_WATERMARK: false,
-          },
+          configOverwrite: { ...(baseConfig), ...(isMentor ? { enableLobby: false } : {}) },
+          interfaceConfigOverwrite: isMentor ? mentorInterface : studentInterface,
         };
 
         jitsiApiRef.current = new window.JitsiMeetExternalAPI(domain, options);
@@ -90,8 +104,8 @@ export default function GroupMeetPreview({ meeting, group, onClose, currentUser 
           <div className="gm-left">
             <div className="gm-join-panel">
               <div className="gm-join-label">Join meeting</div>
-              <div className="gm-join-desc">Click the button to open the meeting in a new tab and join the live session.</div>
-              <a className="gm-join btn-create-primary" href={meetingUrl} target="_blank" rel="noopener noreferrer">Join in new tab</a>
+              <div className="gm-join-desc">Embedded preview shown on the right — you can join here or open in a new tab.</div>
+              <a className="gm-join btn-create-primary" href={meetingUrl} target="_blank" rel="noopener noreferrer">Open in new tab</a>
             </div>
           </div>
           <div className="gm-right">
@@ -101,17 +115,22 @@ export default function GroupMeetPreview({ meeting, group, onClose, currentUser 
                   title="Live preview"
                   src={(() => {
                     try {
-                      const displayName = (currentUser && (currentUser.displayName || currentUser.email)) || 'Guest';
-                      const email = (currentUser && currentUser.email) || '';
-                      const hashParams = [];
-                      hashParams.push(`userInfo.displayName="${encodeURIComponent(displayName)}"`);
-                      if (email) hashParams.push(`userInfo.email="${encodeURIComponent(email)}"`);
-                      hashParams.push('config.prejoinPageEnabled=false');
-                      hashParams.push('config.startWithAudioMuted=false');
-                      hashParams.push('config.startWithVideoMuted=false');
-                      hashParams.push('config.requireModeratorToStart=false');
-                      hashParams.push('config.enableWelcomePage=false');
-                      return `${meetingUrl}#${hashParams.join('&')}`;
+                        const displayName = (currentUser && (currentUser.displayName || currentUser.email)) || 'Guest';
+                        const email = (currentUser && currentUser.email) || '';
+                        const isMentor = (userData && (userData.userRole === 'Mentor' || userData.role === 'mentor')) || (currentUser && (currentUser.role === 'mentor' || currentUser.isMentor));
+                        const hashParams = [];
+                        hashParams.push(`userInfo.displayName="${encodeURIComponent(displayName)}"`);
+                        if (email) hashParams.push(`userInfo.email="${encodeURIComponent(email)}"`);
+                        hashParams.push('config.prejoinPageEnabled=false');
+                        hashParams.push('config.startWithAudioMuted=false');
+                        hashParams.push('config.startWithVideoMuted=false');
+                        hashParams.push('config.requireModeratorToStart=false');
+                        hashParams.push('config.enableWelcomePage=false');
+                        if (isMentor) {
+                          // hint for UI; actual moderator rights depend on Jitsi deployment
+                          hashParams.push('config.enableLobby=false');
+                        }
+                        return `${meetingUrl}#${hashParams.join('&')}`;
                     } catch (e) {
                       return meetingUrl;
                     }
