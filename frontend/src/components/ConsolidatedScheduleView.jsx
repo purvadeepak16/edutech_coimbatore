@@ -69,59 +69,6 @@ function ConsolidatedScheduleView({ schedulesBySubject }) {
           <div className="stat-label">Subjects</div>
         </div>
       </div>
-
-      {/* Timeline */}
-      <div className="consolidated-timeline">
-        <h3>Daily Schedule Timeline</h3>
-        <div className="timeline-scroll">
-          {consolidatedSchedule.map((day) => {
-            const isToday = day.date === today;
-            const isPast = day.date < today;
-            const isSelected = selectedDate === day.date;
-
-            return (
-              <div
-                key={day.date}
-                className={`consolidated-day ${isToday ? 'today' : ''} ${isPast ? 'past' : ''} ${
-                  isSelected ? 'selected' : ''
-                }`}
-                onClick={() => setSelectedDate(isSelected ? null : day.date)}
-              >
-                <div className="day-header">
-                  <strong>Day {consolidatedSchedule.indexOf(day) + 1}</strong>
-                  <span className="day-date">{formatDate(day.date)}</span>
-                  <span className="topic-count">{day.totalTopics}</span>
-                </div>
-
-                {/* Show topics by subject when selected */}
-                {isSelected && (
-                  <div className="day-details">
-                    {Object.entries(day.topicsBySubject).map(([subject, topics]) => (
-                      <div key={subject} className="subject-group">
-                        <h4 className="subject-name">{subject}</h4>
-                        <div className="topics-list">
-                          {topics.map((topic, idx) => (
-                            <div key={topic.id || idx} className="topic-item">
-                              <div className="topic-title">{topic.title}</div>
-                              <div className="topic-meta">
-                                {topic.difficulty && (
-                                  <span className={`difficulty-tag diff-${topic.difficulty}`}>
-                                    {topic.difficulty}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
     </div>
   );
 }

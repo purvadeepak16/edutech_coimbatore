@@ -545,3 +545,9 @@
   color: var(--color-navy, #2D3E50);
 }
 
+/* Confirmed Schedule Section */
+.confirmed-schedule-section {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 3px solid #E8DCC4;
+}

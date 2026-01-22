@@ -28,14 +28,8 @@ function AllSchedulesView({ userId }) {
         <ConsolidatedScheduleView schedulesBySubject={schedulesBySubject} />
       )}
 
-      {/* Show individual subject schedules */}
+      {/* Show message if no schedules */}
       {Object.keys(schedulesBySubject).length === 0 && <div>No schedules found.</div>}
-      {Object.entries(schedulesBySubject).map(([subject, schedule]) => (
-        <div key={subject} style={{ marginTop: '3rem', marginBottom: '2rem', paddingTop: '2rem', borderTop: '2px solid #e5e7eb' }}>
-          <h2 style={{ marginBottom: '1rem' }}>Subject: <strong>{subject}</strong></h2>
-          <ScheduleView schedule={{ schedule, totalDays: schedule.length, startDate: schedule[0]?.date, endDate: schedule[schedule.length-1]?.date, totalTopics: schedule.reduce((sum, day) => sum + (day.topicCount || 0), 0) }} />
-        </div>
-      ))}
     </div>
   );
 }

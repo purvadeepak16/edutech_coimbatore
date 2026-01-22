@@ -21,12 +21,14 @@ function ScheduleView({ schedule, importantTopics, onClose }) {
     <div className="schedule-view-container">
       <div className="schedule-header">
         <div>
-          <h2>📅 Your Complete Study Schedule</h2>
+          <h2>📅 Your Study Schedule</h2>
           <p>From {formatDate(schedule.startDate)} to {formatDate(schedule.endDate)}</p>
         </div>
-        <button className="close-btn" onClick={onClose}>
-          ✕
-        </button>
+        {onClose && (
+          <button className="close-btn" onClick={onClose}>
+            ✕
+          </button>
+        )}
       </div>
 
       {/* Schedule Stats */}
@@ -125,11 +127,13 @@ function ScheduleView({ schedule, importantTopics, onClose }) {
         </div>
       )}
 
-      <div className="schedule-actions">
-        <button className="btn-primary" onClick={onClose}>
-          Got it! Let's Start Learning
-        </button>
-      </div>
+      {onClose && (
+        <div className="schedule-actions">
+          <button className="btn-primary" onClick={onClose}>
+            Close Schedule
+          </button>
+        </div>
+      )}
     </div>
   );
 }

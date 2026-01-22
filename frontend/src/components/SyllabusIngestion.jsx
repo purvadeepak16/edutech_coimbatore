@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import './SyllabusIngestion.css';
 import SyllabusEditor from './SyllabusEditor';
 import ScheduleView from './ScheduleView';
+import ConfirmedScheduleDisplay from './ConfirmedScheduleDisplay';
 import { useAuth } from '../context/AuthContext';
 
 const API_BASE_URL = 'http://localhost:5000/api';
@@ -264,8 +265,10 @@ function SyllabusIngestion() {
         setImportantTopics(data.importantPoints);
       }
 
-      // Keep syllabus displayed with schedule below - don't reset the form
-      // User can still edit or upload a new one
+      // Store the confirmed syllabus
+      setSyllabus(editedSyllabus);
+
+      // Show the schedule below the upload options
       console.log('✅ Syllabus confirmed and saved with schedule');
       setShowSchedule(true);
     } catch (err) {
@@ -297,7 +300,7 @@ function SyllabusIngestion() {
   };
 
   // If we have a confirmed syllabus + schedule, show ingestion form + confirmed summary + schedule
-  if (syllabus && generatedSchedule && showSchedule) {
+  if (generatedSchedule && showSchedule) {
     return (
       <div className="syllabus-ingestion">
         {/* Show ingestion options at top */}
@@ -341,23 +344,18 @@ function SyllabusIngestion() {
         </div>
 
         {/* Show confirmed syllabus summary */}
-        <div style={{ marginTop: '2rem', paddingTop: '2rem', borderTop: '2px solid #e5e7eb' }}>
-          <h2 style={{ marginBottom: '0.5rem' }}>✅ Confirmed Syllabus</h2>
-          <p style={{ color: '#666', marginBottom: '1.5rem' }}>Subject: <strong>{syllabus.subject}</strong></p>
-          
-          {/* Show full schedule */}
-          <ScheduleView
+        <div className="confirmed-schedule-section">
+          <ConfirmedScheduleDisplay
             schedule={generatedSchedule}
-            importantTopics={importantTopics}
-            onClose={() => setGeneratedSchedule(null)}
+            syllabus={syllabus}
           />
         </div>
       </div>
     );
   }
 
-  // If syllabus loaded but no schedule yet (editing mode), show editor
-  if (syllabus) {
+  // If syllabus loaded but not confirmed yet (editing mode), show editor
+  if (syllabus && !showSchedule) {
     return (
       <div className="syllabus-ingestion">
         <SyllabusEditor
