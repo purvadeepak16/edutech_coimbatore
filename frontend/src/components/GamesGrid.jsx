@@ -14,7 +14,7 @@ import './GamesGrid.css';
  * Props:
  * - userProgress: Object mapping gameId to { unlocked, progress, completed }
  */
-const GamesGrid = ({ userProgress = {} }) => {
+const GamesGrid = ({ userProgress = {}, isPlayBlocked = false }) => {
   const navigate = useNavigate();
   const activeGames = getActiveGames(userProgress);
 
@@ -45,7 +45,7 @@ const GamesGrid = ({ userProgress = {} }) => {
             icon={game.icon}
             color={game.color}
             difficulty={game.difficulty}
-            locked={game.locked && !gameProgress.unlocked}
+            locked={(game.locked && !gameProgress.unlocked) || isPlayBlocked}
             progress={gameProgress.progress || null}
             completed={gameProgress.completed || false}
             onClick={() => handleGameClick(game)}
