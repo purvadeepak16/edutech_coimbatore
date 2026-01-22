@@ -38,6 +38,22 @@
   gap: 1rem;
 }
 
+.plan-task-item-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.plan-task-item-wrapper:hover {
+  background: #fafafa;
+  border-color: #E8DCC4;
+}
+
 .plan-task-item {
   display: flex;
   gap: 0.75rem;
@@ -47,6 +63,65 @@
 
 .plan-task-item:hover {
   opacity: 0.8;
+}
+
+.topic-action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding-left: 1.75rem;
+}
+
+.topic-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 0.9rem;
+  border: 2px solid #2D3E50;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 2px 2px 0px #2D3E50;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.topic-action-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px #2D3E50;
+}
+
+.topic-action-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0px #2D3E50;
+}
+
+.topic-action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.audio-btn-small {
+  background: #E9D5FF;
+  color: #2D3E50;
+}
+
+.reading-btn-small {
+  background: #F9C9D4;
+  color: #2D3E50;
+}
+
+.mindmap-btn-small {
+  background: #A8D8E8;
+  color: #2D3E50;
+}
+
+.assessment-btn-small {
+  background: #FFF4C7;
+  color: #2D3E50;
 }
 
 .task-check input[type='checkbox'] {

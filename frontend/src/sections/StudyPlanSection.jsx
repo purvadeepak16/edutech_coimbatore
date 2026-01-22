@@ -73,6 +73,28 @@ const StudyPlanSection = () => {
     const quizRunningRef = useRef(false);
     const navigate = useNavigate();
 
+    const handleStartAudioLearning = async () => {
+        // Regenerate audio for today's tasks and scroll to audio section
+        if (todaysTasks.length === 0) {
+            alert('No study plan topics found for today');
+            return;
+        }
+        
+        // If audio is already generating, just scroll to it
+        if (generatingTaskAudio) {
+            document.querySelector('.task-audio-section')?.scrollIntoView({ behavior: 'smooth' });
+            return;
+        }
+        
+        // Regenerate audio
+        await fetchAndGenerateTaskAudio();
+        
+        // Scroll to audio section after generation
+        setTimeout(() => {
+            document.querySelector('.task-audio-section')?.scrollIntoView({ behavior: 'smooth' });
+        }, 500);
+    };
+
     const handleStartReading = () => {
         // Navigate to study-reader page and pass today's tasks via location state
         navigate('/study-reader', { state: { todaysTasks } });
@@ -88,6 +110,11 @@ const StudyPlanSection = () => {
 
         const combinedTopic = todaysTasks.map(t => `${t.subject}: ${t.title}`).join('\n');
         navigate(`/visual-map?topic=${encodeURIComponent(combinedTopic)}`);
+    };
+
+    const handleStartAssessment = () => {
+        // Navigate to assessments page and pass today's tasks
+        navigate('/assessments', { state: { todaysTasks } });
     };
 
     /* ✅ Fetch today's tasks on component mount */
@@ -320,6 +347,29 @@ const StudyPlanSection = () => {
                 <div className="status-badge">
                     🟢 Well Balanced
                 </div>
+            </div>
+
+            {/* QUICK ACTION BUTTONS */}
+            <div className="study-plan-quick-actions">
+                <button className="quick-action-btn audio-btn" onClick={handleStartAudioLearning}>
+                    <Headphones size={20} />
+                    <span>Audio Learning</span>
+                </button>
+                <button className="quick-action-btn reading-btn" onClick={handleStartReading}>
+                    <BookOpen size={20} />
+                    <span>Reading Notes</span>
+                </button>
+                <button className="quick-action-btn mindmap-btn" onClick={handleStartMindmap}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M12 1v6m0 6v6m-6-6h6m6 0h6"/>
+                    </svg>
+                    <span>Mind Map</span>
+                </button>
+                <button className="quick-action-btn assessment-btn" onClick={handleStartAssessment}>
+                    <FileText size={20} />
+                    <span>Assessment</span>
+                </button>
             </div>
 
             {/* Text-to-audio moved to its own page: /text-to-speech */}

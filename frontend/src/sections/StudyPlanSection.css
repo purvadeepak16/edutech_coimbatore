@@ -34,6 +34,61 @@
     font-weight: 600;
 }
 
+/* Quick Action Buttons */
+.study-plan-quick-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin: 8px 0;
+}
+
+.quick-action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 18px 24px;
+    border: 2.5px solid var(--color-navy);
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 4px 4px 0px var(--color-navy);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.quick-action-btn:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0px var(--color-navy);
+}
+
+.quick-action-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px var(--color-navy);
+}
+
+.audio-btn {
+    background: var(--color-soft-purple);
+    color: var(--color-navy);
+}
+
+.reading-btn {
+    background: var(--color-soft-pink);
+    color: var(--color-navy);
+}
+
+.mindmap-btn {
+    background: var(--color-soft-teal);
+    color: var(--color-navy);
+}
+
+.assessment-btn {
+    background: var(--color-soft-yellow);
+    color: var(--color-navy);
+}
+
 .timeline {
     display: flex;
     flex-direction: column;
