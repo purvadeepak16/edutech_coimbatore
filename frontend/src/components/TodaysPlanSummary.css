@@ -124,6 +124,27 @@
   color: #2D3E50;
 }
 
+.audio-btn-small.playing {
+  background: #A78BFA;
+  color: white;
+  border-color: #7C3AED;
+  box-shadow: 2px 2px 0px #7C3AED;
+  animation: pulse-audio 1.5s ease-in-out infinite;
+}
+
+.audio-btn-small.playing:hover {
+  box-shadow: 3px 3px 0px #7C3AED;
+}
+
+@keyframes pulse-audio {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
 .task-check input[type='checkbox'] {
   width: 18px;
   height: 18px;

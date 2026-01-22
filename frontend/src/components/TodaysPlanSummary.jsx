@@ -12,6 +12,8 @@ function TodaysPlanSummary() {
   const [todaysTasks, setTodaysTasks] = useState(null);
   const [loading, setLoading] = useState(true);
   const [generatingAudio, setGeneratingAudio] = useState({});
+  const [playingAudioKey, setPlayingAudioKey] = useState(null);
+  const [audioInstance, setAudioInstance] = useState(null);
 
   useEffect(() => {
     if (currentUser) {
@@ -49,6 +51,27 @@ function TodaysPlanSummary() {
 
   const handleAudioLearning = async (subject, topic) => {
     const topicKey = `${subject}-${topic.id}`;
+    
+    // If audio is already playing for this topic, pause it
+    if (playingAudioKey === topicKey && audioInstance && !audioInstance.paused) {
+      audioInstance.pause();
+      setPlayingAudioKey(null); // Keep audioInstance for resume
+      return;
+    }
+
+    // If audio is paused for this topic, resume it
+    if (playingAudioKey === topicKey && audioInstance && audioInstance.paused) {
+      audioInstance.play();
+      setPlayingAudioKey(topicKey);
+      return;
+    }
+
+    // Stop any other currently playing audio
+    if (audioInstance) {
+      audioInstance.pause();
+      setAudioInstance(null);
+    }
+
     setGeneratingAudio(prev => ({ ...prev, [topicKey]: true }));
     
     try {
@@ -72,12 +95,19 @@ function TodaysPlanSummary() {
 
       if (ttsRes.ok) {
         const ttsData = await ttsRes.json();
-        // Play audio or navigate
+        // Play audio
         if (ttsData.audioUrl) {
           const audio = new Audio(ttsData.audioUrl);
           audio.play();
+          setAudioInstance(audio);
+          setPlayingAudioKey(topicKey);
+
+          // Reset when audio ends
+          audio.onended = () => {
+            setPlayingAudioKey(null);
+            setAudioInstance(null);
+          };
         }
-        alert('Audio generated! Playing now...');
       }
     } catch (error) {
       console.error('Failed to generate audio:', error);
@@ -137,13 +167,15 @@ function TodaysPlanSummary() {
                   </div>
                   <div className="topic-action-buttons">
                     <button 
-                      className="topic-action-btn audio-btn-small"
+                      className={`topic-action-btn audio-btn-small ${playingAudioKey === topicKey ? 'playing' : ''}`}
                       onClick={() => handleAudioLearning(subject, topic)}
                       disabled={generatingAudio[topicKey]}
-                      title="Audio Learning"
+                      title={playingAudioKey === topicKey && audioInstance && !audioInstance.paused ? "Click to pause audio" : "Audio Learning"}
                     >
                       <Headphones size={16} />
-                      <span>{generatingAudio[topicKey] ? 'Generating...' : 'Audio'}</span>
+                      <span>
+                        {generatingAudio[topicKey] ? 'Generating...' : (playingAudioKey === topicKey && audioInstance && !audioInstance.paused ? 'Pause' : (playingAudioKey === topicKey && audioInstance && audioInstance.paused ? 'Resume' : 'Audio'))}
+                      </span>
                     </button>
                     <button 
                       className="topic-action-btn reading-btn-small"
