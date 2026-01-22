@@ -131,16 +131,21 @@ const AssessmentTestPage = () => {
     questions.forEach((q, i) => { total += q.marks; if (answers[i] === q.correctIndex) scored += q.marks; });
     const percent = total === 0 ? 0 : Math.round((scored/total) * 100);
 
-    // Unlock flow
-    if (level === 'basic' && percent >= 70) {
+    // Unlock flow - Basic test requires 60% to unlock Advanced
+    if (level === 'basic' && percent >= 60) {
       // auto-start advanced
       setTimeout(() => navigate('/assessment-test', { state: { level: 'advanced', todaysTasks } }), 400);
-      alert(`Basic passed ${percent}%. Starting Advanced test...`);
+      alert(`🎉 Basic Test Passed with ${percent}%! Advanced Test Unlocked. Starting now...`);
+      return;
+    }
+    if (level === 'basic' && percent < 60) {
+      alert(`Basic Test Score: ${percent}%. You need 60% or higher to unlock Advanced Test. Try again!`);
+      navigate('/assessments', { replace: true });
       return;
     }
     if (level === 'advanced' && percent >= 50) {
       setTimeout(() => navigate('/assessment-test', { state: { level: 'scenario', todaysTasks } }), 400);
-      alert(`Advanced passed ${percent}%. Starting Scenario test...`);
+      alert(`🎉 Advanced Test Passed with ${percent}%! Scenario Test Unlocked. Starting now...`);
       return;
     }
 

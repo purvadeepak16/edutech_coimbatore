@@ -1,6 +1,7 @@
 import { auth } from '../config/firebase';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// Use relative path to leverage Vite's proxy configuration
+const API_BASE_URL = '/api';
 
 // Helper to get auth token
 async function getAuthToken() {

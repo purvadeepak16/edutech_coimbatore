@@ -53,7 +53,28 @@ export async function generateQuiz(req, res) {
       return res.json({ questions: mock, mock: true, quizId });
     }
 
-    // Create a detailed prompt for AI
+    // Create a detailed prompt for AI with complexity based on level
+    let complexityGuidance = '';
+    if (level === 'basic') {
+      complexityGuidance = `
+- Focus on recall and understanding of fundamental concepts
+- Test basic definitions, facts, and straightforward applications
+- Questions should be direct and clear`;
+    } else if (level === 'advanced') {
+      complexityGuidance = `
+- Focus on application, analysis, and synthesis of concepts
+- Include scenario-based questions requiring deeper reasoning
+- Test ability to apply knowledge in new situations
+- Questions should require multi-step thinking or connecting multiple concepts
+- Include "what if" scenarios and case-based questions`;
+    } else { // scenario
+      complexityGuidance = `
+- Present real-world complex scenarios requiring comprehensive analysis
+- Test evaluation, problem-solving, and decision-making skills
+- Include multi-faceted situations with multiple valid considerations
+- Questions should require critical thinking and justification of choices`;
+    }
+
     const prompt = `Generate exactly 10 multiple-choice quiz questions about the following topics: ${topicList}.
 
 Requirements:
@@ -63,13 +84,15 @@ Requirements:
 - The correct answer should be accurate and verifiable
 - Difficulty level: ${level}
 
+${complexityGuidance}
+
 Return ONLY a valid JSON array with this exact structure (no markdown, no explanation, no code blocks):
 [
   {
     "question": "Your question text here?",
     "options": ["Full option 1 text", "Full option 2 text", "Full option 3 text", "Full option 4 text"],
     "correctIndex": 0,
-    "marks": 1
+    "marks": ${level === 'advanced' ? 2 : level === 'scenario' ? 3 : 1}
   }
 ]`;
 
