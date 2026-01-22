@@ -2,7 +2,7 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { useAuth } from '../context/AuthContext';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Headphones, BookOpen, FileText, ChevronRight, Clock } from 'lucide-react';
 import './StudyPlanSection.css';
@@ -63,6 +63,14 @@ const StudyPlanSection = () => {
     const [todaysTasks, setTodaysTasks] = useState([]);
     const [taskAudioList, setTaskAudioList] = useState([]);
     const [generatingTaskAudio, setGeneratingTaskAudio] = useState(false);
+    // Quiz state
+    const [showQuizModal, setShowQuizModal] = useState(false);
+    const [quizQuestions, setQuizQuestions] = useState([]);
+    const [selectedAnswers, setSelectedAnswers] = useState([]);
+    const [remainingSeconds, setRemainingSeconds] = useState(60);
+    const [submittingQuiz, setSubmittingQuiz] = useState(false);
+    const quizIntervalRef = useRef(null);
+    const quizRunningRef = useRef(false);
     const navigate = useNavigate();
 
     const handleStartReading = () => {
@@ -169,6 +177,130 @@ const StudyPlanSection = () => {
         }
     };
 
+    /* ---------- QUIZ GENERATION & UI ---------- */
+    const startLocalTimer = () => {
+        if (quizRunningRef.current) return;
+        quizRunningRef.current = true;
+        quizIntervalRef.current = setInterval(() => {
+            setRemainingSeconds(s => {
+                if (s <= 1) {
+                    clearInterval(quizIntervalRef.current);
+                    quizIntervalRef.current = null;
+                    quizRunningRef.current = false;
+                    // Auto-submit when time's up
+                    handleSubmitQuiz();
+                    return 0;
+                }
+                return s - 1;
+            });
+        }, 1000);
+    };
+
+    const stopLocalTimer = () => {
+        if (quizIntervalRef.current) {
+            clearInterval(quizIntervalRef.current);
+            quizIntervalRef.current = null;
+        }
+        quizRunningRef.current = false;
+    };
+
+    useEffect(() => {
+        const handleVisibility = () => {
+            if (!showQuizModal) return;
+            if (document.visibilityState === 'hidden') stopLocalTimer();
+            else startLocalTimer();
+        };
+        window.addEventListener('blur', stopLocalTimer);
+        window.addEventListener('focus', () => { if (showQuizModal) startLocalTimer(); });
+        document.addEventListener('visibilitychange', handleVisibility);
+        return () => {
+            window.removeEventListener('blur', stopLocalTimer);
+            window.removeEventListener('focus', startLocalTimer);
+            document.removeEventListener('visibilitychange', handleVisibility);
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [showQuizModal]);
+
+    const fetchGenerateQuiz = async () => {
+        if (!todaysTasks || todaysTasks.length === 0) {
+            alert('No topics found for today to generate a quiz.');
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API_BASE_URL}/assessments/generate-quiz`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ level: 'basic', todaysTasks })
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                console.error('Quiz generation failed', data);
+                alert('Failed to generate quiz');
+                return;
+            }
+
+            // Normalize questions: ensure 10 questions, each has 4 options
+            const questions = (data.questions || []).slice(0, 10).map(q => ({
+                question: q.question || q.prompt || 'Question',
+                options: (q.options && q.options.length === 4) ? q.options : (q.choices || q.answers || ['A','B','C','D']).slice(0,4),
+                correctIndex: Number.isInteger(q.correctIndex) ? q.correctIndex : 0,
+                marks: q.marks || 1
+            }));
+
+            setQuizQuestions(questions);
+            setSelectedAnswers(new Array(questions.length).fill(null));
+            setRemainingSeconds(60);
+            setShowQuizModal(true);
+            // start timer
+            startLocalTimer();
+        } catch (err) {
+            console.error('Failed to generate quiz:', err);
+            alert('Quiz generation error');
+        }
+    };
+
+    const handleSelectAnswer = (qIndex, optIndex) => {
+        setSelectedAnswers(prev => {
+            const next = [...prev];
+            next[qIndex] = optIndex;
+            return next;
+        });
+    };
+
+    const handleSubmitQuiz = async () => {
+        if (submittingQuiz) return;
+        stopLocalTimer();
+        setSubmittingQuiz(true);
+        try {
+            // compute score
+            let score = 0;
+            quizQuestions.forEach((q, i) => { if (selectedAnswers[i] === q.correctIndex) score += (q.marks || 1); });
+
+            // save quiz to backend (which persists to Firestore)
+            const payload = { userId: currentUser?.uid || 'anonymous', title: `Auto Quiz ${new Date().toISOString()}`, questions: quizQuestions };
+            const res = await fetch(`${API_BASE_URL}/assessments/save-quiz`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                console.error('Failed to save quiz', data);
+                alert('Failed to save quiz to database');
+            } else {
+                // Optionally record the attempt locally or show score
+                alert(`Quiz submitted. Score: ${score}/${quizQuestions.length}`);
+            }
+        } catch (err) {
+            console.error('Submit quiz error', err);
+            alert('Error submitting quiz');
+        } finally {
+            setSubmittingQuiz(false);
+            setShowQuizModal(false);
+        }
+    };
+
         /* Text-to-audio was moved to a dedicated page */
 
 
@@ -259,6 +391,43 @@ const StudyPlanSection = () => {
                     onStart={() => navigate('/assessments', { state: { todaysTasks } })}
                 />
             </div>
+
+            <div style={{ marginTop: 16 }}>
+                <button className="btn-start" onClick={fetchGenerateQuiz}>Generate 10-question Quiz</button>
+            </div>
+
+            {/* Quiz Modal */}
+            {showQuizModal && (
+                <div className="modal-backdrop" role="dialog" aria-modal="true">
+                    <div className="modal-card quiz-modal">
+                        <div className="modal-header">
+                            <h3>Timed Quiz — 10 MCQs</h3>
+                            <div className="quiz-timer">Time left: {remainingSeconds}s</div>
+                        </div>
+                        <div className="modal-body">
+                            {quizQuestions.map((q, qi) => (
+                                <div key={qi} className="quiz-question">
+                                    <p className="q-text">{qi+1}. {q.question}</p>
+                                    <div className="q-options">
+                                        {q.options.map((opt, oi) => (
+                                            <label key={oi} className={`q-option ${selectedAnswers[qi]===oi? 'selected':''}`}>
+                                                <input type="radio" name={`q${qi}`} checked={selectedAnswers[qi]===oi} onChange={() => handleSelectAnswer(qi, oi)} />
+                                                <span>{opt}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="modal-actions">
+                            <div className="modal-actions-right">
+                                <button className="btn-secondary" onClick={() => { stopLocalTimer(); setShowQuizModal(false); }}>Cancel</button>
+                                <button className="btn-start" onClick={handleSubmitQuiz} disabled={submittingQuiz}>{submittingQuiz ? 'Submitting...' : 'Submit'}</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <button className="view-full-week">
                 View full week schedule <ChevronRight size={16} />

@@ -83,10 +83,18 @@ const AssessmentTestPage = () => {
         const res = await fetch(`${API_URL}/api/assessments/generate-quiz`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ level, todaysTasks })
+          body: JSON.stringify({ level, todaysTasks, userId: window.firebase?.auth()?.currentUser?.uid })
         });
-        if (!res.ok) throw new Error('AI quiz generation failed');
-        const json = await res.json();
+        const text = await res.text();
+        let json;
+        try {
+          json = JSON.parse(text);
+        } catch (e) {
+          console.warn('Failed to parse JSON response from /generate-quiz:', e, 'raw:', text);
+          json = null;
+        }
+        console.debug('AI endpoint response:', res.status, text);
+        if (!res.ok) throw new Error(`AI quiz generation failed ${res.status}`);
         if (mounted && json && Array.isArray(json.questions) && json.questions.length > 0) {
           setQuestions(json.questions);
           setCurrent(0);

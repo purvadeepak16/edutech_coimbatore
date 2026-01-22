@@ -8,90 +8,244 @@ import fetch from 'node-fetch';
 export async function generateQuiz(req, res) {
   try {
     const apiKey = process.env.OPENROUTER_API_KEY;
-    const { level = 'basic', todaysTasks = [] } = req.body || {};
+    const { level = 'basic', todaysTasks = [], userId } = req.body || {};
 
     // Minimal validation
     if (!Array.isArray(todaysTasks)) return res.status(400).json({ error: 'todaysTasks must be an array' });
 
-    // Build a concise prompt for the AI
-    const subjects = Array.from(new Set(todaysTasks.map(t => t.subject).filter(Boolean)));
-    const topicHint = subjects.length > 0 ? subjects.join(', ') : 'General Knowledge';
+    // Build detailed topic context from today's tasks
+    const topics = todaysTasks.map(t => `${t.subject}: ${t.title}`).filter(Boolean);
+    const topicList = topics.length > 0 ? topics.join(', ') : 'General Knowledge';
+    
+    console.log('🎯 Generating quiz for topics:', topicList);
 
-    const useMock = process.env.USE_MOCK_AI === 'true';
-    if (useMock || !apiKey) {
-      // Return a simple mocked quiz
-      const mock = Array.from({ length: level === 'scenario' ? 2 : 10 }).map((_, i) => ({
-        question: `${level} mock question ${i+1} about ${topicHint}`,
-        options: ['A', 'B', 'C', 'D'],
+    if (!apiKey) {
+      console.warn('⚠️ No OPENROUTER_API_KEY found, returning mock data');
+      const mock = Array.from({ length: 10 }).map((_, i) => ({
+        question: `Question ${i+1}: What is a key concept related to ${topicList}?`,
+        options: [
+          `Understanding fundamental principles of the topic`,
+          `An unrelated concept`,
+          `A different subject matter`,
+          `Something completely different`
+        ],
         correctIndex: 0,
-        marks: level === 'basic' ? 1 : level === 'advanced' ? 2 : 5
+        marks: 1
       }));
-      return res.json({ questions: mock, mock: true });
+      
+      // Save mock quiz to Firebase
+      let quizId = null;
+      if (userId) {
+        try {
+          quizId = await saveGeneratedQuiz(userId, { 
+            title: `Quiz: ${topicList}`, 
+            questions: mock,
+            level,
+            topics: todaysTasks,
+            mock: true
+          });
+          console.log('✅ Saved mock quiz to Firebase:', quizId);
+        } catch (err) {
+          console.error('Failed to save mock quiz:', err);
+        }
+      }
+      
+      return res.json({ questions: mock, mock: true, quizId });
     }
 
-    const prompt = `You are an assessment generator. Produce a JSON array of ${level === 'scenario' ? '1-2' : '10'} multiple-choice questions for students. Use only the subjects (comma-separated): ${topicHint} as the domain. Output MUST be valid JSON only (no commentary) in this format:\n[ { "question": "...", "options": ["a","b","c","d"], "correctIndex": 0, "marks": 1 }, ... ]`;
+    // Create a detailed prompt for AI
+    const prompt = `Generate exactly 10 multiple-choice quiz questions about the following topics: ${topicList}.
 
+Requirements:
+- Each question should test understanding of the specific topic mentioned
+- Provide 4 answer options for each question (full sentences, not just letters)
+- Make the options realistic and educational
+- The correct answer should be accurate and verifiable
+- Difficulty level: ${level}
+
+Return ONLY a valid JSON array with this exact structure (no markdown, no explanation, no code blocks):
+[
+  {
+    "question": "Your question text here?",
+    "options": ["Full option 1 text", "Full option 2 text", "Full option 3 text", "Full option 4 text"],
+    "correctIndex": 0,
+    "marks": 1
+  }
+]`;
+
+    console.log('🤖 Calling OpenRouter API with GPT-3.5-turbo...');
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
+        'Authorization': `Bearer ${apiKey}`,
+        'HTTP-Referer': 'http://localhost:5000',
+        'X-Title': 'StudySync Quiz Generator'
       },
-      body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }] })
+      body: JSON.stringify({
+        model: 'openai/gpt-3.5-turbo',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7,
+        max_tokens: 2000
+      })
     });
 
     if (!response.ok) {
       const text = await response.text();
-      console.error('OpenRouter quiz generation HTTP error', response.status, text);
-      return res.status(502).json({ error: 'AI provider returned error', status: response.status, body: text });
+      console.error('❌ OpenRouter API error:', response.status, text);
+      return res.status(502).json({ error: 'AI provider error', status: response.status });
     }
 
     const data = await response.json();
+    console.log('✅ OpenRouter response received');
 
-    // Extract assistant text robustly (same logic used by openrouter proxy)
+    // Extract the AI's response text
     let assistantText = '';
-    if (data?.choices && data.choices[0]) {
-      const ch = data.choices[0];
-      if (ch.message) {
-        const msg = ch.message;
-        if (typeof msg === 'string') assistantText = msg;
-        else if (Array.isArray(msg.content)) {
-          const content = msg.content.find(c => c.type === 'output_text') || msg.content[0];
-          assistantText = content?.text || content?.content || JSON.stringify(content);
-        } else if (msg.content && (msg.content.text || msg.content[0]?.text)) {
-          assistantText = msg.content.text || msg.content[0].text;
-        } else {
-          assistantText = JSON.stringify(msg);
-        }
-      } else if (ch.text) assistantText = ch.text;
-      else if (ch.delta) assistantText = ch.delta.content || JSON.stringify(ch.delta);
+    if (data?.choices?.[0]?.message?.content) {
+      assistantText = data.choices[0].message.content;
+    } else {
+      console.error('❌ Unexpected API response structure:', JSON.stringify(data).substring(0, 200));
+      return res.status(500).json({ error: 'Unexpected API response format' });
     }
-    const raw = assistantText || '';
 
-    // Try to parse JSON from raw
+    console.log('📝 Raw AI response preview:', assistantText.substring(0, 300));
+
+    // Clean and parse the response
+    let cleanedText = assistantText.trim();
+    
+    // Remove markdown code blocks if present
+    cleanedText = cleanedText.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+    
+    // Extract JSON array if embedded in text
+    const arrayMatch = cleanedText.match(/\[[\s\S]*\]/);
+    if (arrayMatch) {
+      cleanedText = arrayMatch[0];
+    }
+
     let questions = null;
     try {
-      // If content is an array already
-      if (Array.isArray(raw)) questions = raw;
-      else if (typeof raw === 'string') {
-        // Try to locate the JSON substring
-        const start = raw.indexOf('[');
-        const end = raw.lastIndexOf(']');
-        const jsonText = start !== -1 && end !== -1 ? raw.slice(start, end + 1) : raw;
-        questions = JSON.parse(jsonText);
+      questions = JSON.parse(cleanedText);
+      console.log(`✅ Successfully parsed ${questions.length} questions from AI`);
+    } catch (parseError) {
+      console.error('❌ Failed to parse AI response:', parseError.message);
+      console.error('Cleaned text sample:', cleanedText.substring(0, 500));
+      
+      const mock = Array.from({ length: 10 }).map((_, i) => ({
+        question: `Question ${i+1}: What is a key concept related to ${topicList}?`,
+        options: [
+          `Understanding fundamental principles of the topic`,
+          `An unrelated concept`,
+          `A different subject matter`,
+          `Something completely different`
+        ],
+        correctIndex: 0,
+        marks: 1
+      }));
+      
+      let quizId = null;
+      if (userId) {
+        try {
+          quizId = await saveGeneratedQuiz(userId, { 
+            title: `Quiz: ${topicList}`, 
+            questions: mock,
+            level,
+            topics: todaysTasks,
+            mock: true,
+            parseError: parseError.message
+          });
+        } catch (err) {
+          console.error('Failed to save fallback quiz:', err);
+        }
       }
-    } catch (err) {
-      console.error('Failed to parse AI quiz JSON:', err, 'raw:', raw);
-      return res.status(500).json({ error: 'Failed to parse AI response', raw });
+      
+      return res.json({ questions: mock, mock: true, parseError: parseError.message, quizId });
     }
 
+    // Validate questions format
     if (!Array.isArray(questions) || questions.length === 0) {
-      return res.status(500).json({ error: 'AI returned no questions', raw: questions });
+      console.error('❌ AI returned invalid question format');
+      const mock = Array.from({ length: 10 }).map((_, i) => ({
+        question: `Question ${i+1}: What is a key concept related to ${topicList}?`,
+        options: [
+          `Understanding fundamental principles of the topic`,
+          `An unrelated concept`,
+          `A different subject matter`,
+          `Something completely different`
+        ],
+        correctIndex: 0,
+        marks: 1
+      }));
+      
+      let quizId = null;
+      if (userId) {
+        try {
+          quizId = await saveGeneratedQuiz(userId, { 
+            title: `Quiz: ${topicList}`, 
+            questions: mock,
+            level,
+            topics: todaysTasks,
+            mock: true
+          });
+        } catch (err) {
+          console.error('Failed to save fallback quiz:', err);
+        }
+      }
+      
+      return res.json({ questions: mock, mock: true, quizId });
     }
 
-    return res.json({ questions });
+    // Normalize questions structure
+    questions = questions.slice(0, 10).map(q => ({
+      question: q.question || 'Question text missing',
+      options: Array.isArray(q.options) && q.options.length >= 4 
+        ? q.options.slice(0, 4) 
+        : ['Option 1', 'Option 2', 'Option 3', 'Option 4'],
+      correctIndex: typeof q.correctIndex === 'number' ? q.correctIndex : 0,
+      marks: q.marks || 1
+    }));
+
+    console.log(`✅ Successfully generated ${questions.length} AI questions`);
+    
+    // Save to Firebase
+    let quizId = null;
+    if (userId) {
+      try {
+        quizId = await saveGeneratedQuiz(userId, { 
+          title: `Quiz: ${topicList}`, 
+          questions,
+          level,
+          topics: todaysTasks,
+          aiGenerated: true
+        });
+        console.log('✅ Saved AI quiz to Firebase:', quizId);
+      } catch (err) {
+        console.error('Failed to save AI quiz:', err);
+      }
+    }
+    
+    return res.json({ questions, aiGenerated: true, quizId });
   } catch (err) {
     console.error('generateQuiz error:', err?.message || err);
     return res.status(500).json({ error: 'Internal server error', details: err?.message });
+  }
+}
+
+import { saveGeneratedQuiz } from '../services/firestoreService.js';
+
+/**
+ * POST /api/assessments/save-quiz
+ * Body: { userId, title, questions }
+ */
+export async function saveQuiz(req, res) {
+  try {
+    const { userId, title = 'Auto-generated Quiz', questions = [] } = req.body || {};
+    if (!userId) return res.status(400).json({ error: 'userId required' });
+    if (!Array.isArray(questions) || questions.length === 0) return res.status(400).json({ error: 'questions required' });
+
+    const id = await saveGeneratedQuiz(userId, { title, questions });
+    return res.json({ success: true, id });
+  } catch (err) {
+    console.error('saveQuiz error:', err?.message || err);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 }

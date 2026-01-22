@@ -303,3 +303,26 @@ export async function markAssignmentCompleted(userId, date) {
     throw new Error('Failed to mark assignment as completed');
   }
 }
+
+/**
+ * Save a generated quiz for a user
+ * @param {string} userId
+ * @param {object} quizData - { title, questions: [{question, options, correctIndex, marks}], meta }
+ * @returns {Promise<string>} document id
+ */
+export async function saveGeneratedQuiz(userId, quizData) {
+  try {
+    const docRef = db.collection('generatedQuizzes').doc();
+    const payload = removeUndefined({
+      userId,
+      ...quizData,
+      createdAt: new Date().toISOString()
+    });
+    await docRef.set(payload, { merge: true });
+    console.log(`✅ Saved generated quiz ${docRef.id} for user ${userId}`);
+    return docRef.id;
+  } catch (err) {
+    console.error('Error saving generated quiz:', err);
+    throw new Error('Failed to save generated quiz');
+  }
+}
